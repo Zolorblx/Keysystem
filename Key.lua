@@ -1,1679 +1,715 @@
---[[
-    ================================================================
-    [ SCRIPT INFORMATION ]
-    Project: Custom Script
-    Author: OYB
-    YouTube: https://www.youtube.com/channel/UCAlXXV1Hbvf7WbfXARuVtiQ
+--// BLUE GALAXY KEY UI
+--// Clean UI + Moving Stars + Vertical Spaceship Intro
 
-    [ TERMS AND CONDITIONS ]
-    - You ARE allowed to use and modify this script for your own games.
-    - You ARE NOT allowed to re-upload, redistribute, or claim
-      ownership of this script.
-    ================================================================
-]]
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+--//==================================================
+--// CONFIG
+--//==================================================
 
 local Config = {
-    -- [1] PlatoBoost Settings
-    ServiceId   = 30834,
-    PlatoSecret = "REPLACE_WITH_YOUR_ROTATED_PLATO_SECRET",
+    HubName = "ZOLO",
+    HubDescription = "5$ for lifetime?",
 
-    -- [2] Anti-Bypass / Global Secret Variable
-    Secret = "REPLACE_WITH_YOUR_SECRET",
+    Background = Color3.fromRGB(4, 8, 22),
+    Panel = Color3.fromRGB(9, 16, 38),
 
-    -- [3] Scripts & Links
-    MainScriptURL =
-        "https://raw.githubusercontent.com/Zolorblx/Keysystem/refs/heads/main/ZoloScript.lua",
+    Blue = Color3.fromRGB(45, 150, 255),
+    LightBlue = Color3.fromRGB(100, 200, 255),
+    Purple = Color3.fromRGB(100, 90, 255),
 
-    -- [4] Social Media
-    ShowDiscord   = false,
-    DiscordURL    = "https://discord.gg/kT55J724BK",
-
-    ShowInstagram = false,
-    InstagramURL  = "https://www.instagram.com/oyb0i/",
-
-    ShowYoutube   = false,
-    YoutubeURL    = "https://www.youtube.com/channel/UCAlXXV1Hbvf7WbfXARuVtiQ",
-
-    -- [5] File System
-    KeyFileName = "Mykey.txt",
-
-    -- [6] GUI
-    OldGuiName  = "KARINDERYA",
-    MainGuiName = "KARINDERYA",
-
-    -- [7] Hub Information
-    HubName        = "ZOLO",
-    HubDescription = "5$ for lifetime?"
+    StarCount = 75,
+    IntroDuration = 3.2,
 }
 
-----------------------------------------------------------------
--- LIBRARIES
-----------------------------------------------------------------
+--//==================================================
+--// REMOVE OLD UI
+--//==================================================
 
-local a = 2^32
-local b = a - 1
-
-local function c(d, e)
-    local f, g = 0, 1
-
-    while d ~= 0 or e ~= 0 do
-        local h, i = d % 2, e % 2
-        local j = (h + i) % 2
-
-        f = f + j * g
-        d = math.floor(d / 2)
-        e = math.floor(e / 2)
-        g = g * 2
-    end
-
-    return f % a
+local old = playerGui:FindFirstChild("ZOLO_GalaxyUI")
+if old then
+    old:Destroy()
 end
 
-local function k(d, e, l, ...)
-    local m
+--//==================================================
+--// SCREEN GUI
+--//==================================================
 
-    if e then
-        d = d % a
-        e = e % a
-        m = c(d, e)
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "ZOLO_GalaxyUI"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.IgnoreGuiInset = true
+ScreenGui.DisplayOrder = 999
+ScreenGui.Parent = playerGui
 
-        if l then
-            m = k(m, l, ...)
-        end
+--//==================================================
+--// GALAXY BACKGROUND
+--//==================================================
 
-        return m
-    elseif d then
-        return d % a
-    else
-        return 0
-    end
-end
+local Background = Instance.new("Frame")
+Background.Size = UDim2.fromScale(1, 1)
+Background.BackgroundColor3 = Config.Background
+Background.BorderSizePixel = 0
+Background.Parent = ScreenGui
 
-local function n(d, e, l, ...)
-    local m
+-- Subtle blue center glow
+local Glow = Instance.new("Frame")
+Glow.AnchorPoint = Vector2.new(0.5, 0.5)
+Glow.Position = UDim2.fromScale(0.5, 0.48)
+Glow.Size = UDim2.fromScale(0.65, 0.65)
+Glow.BackgroundColor3 = Color3.fromRGB(15, 55, 130)
+Glow.BackgroundTransparency = 0.88
+Glow.BorderSizePixel = 0
+Glow.Parent = Background
 
-    if e then
-        d = d % a
-        e = e % a
-        m = (d + e - c(d, e)) / 2
+local GlowCorner = Instance.new("UICorner")
+GlowCorner.CornerRadius = UDim.new(1, 0)
+GlowCorner.Parent = Glow
 
-        if l then
-            m = n(m, l, ...)
-        end
+--//==================================================
+--// STARS
+--//==================================================
 
-        return m
-    elseif d then
-        return d % a
-    else
-        return b
-    end
-end
+local Stars = {}
 
-local function o(p)
-    return b - p
-end
+local function createStar()
+    local star = Instance.new("Frame")
 
-local function q(d, r)
-    if r < 0 then
-        return lshift(d, -r)
-    end
+    local size = math.random(1, 3)
 
-    return math.floor(d % 2^32 / 2^r)
-end
-
-local function s(p, r)
-    if r > 31 or r < -31 then
-        return 0
-    end
-
-    return q(p % a, r)
-end
-
-function lshift(d, r)
-    if r < 0 then
-        return s(d, -r)
-    end
-
-    return d * 2^r % 2^32
-end
-
-local function t(p, r)
-    p = p % a
-    r = r % 32
-
-    local u = n(p, 2^r - 1)
-
-    return s(p, r) + lshift(u, 32 - r)
-end
-
-local v = {
-    0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5,
-    0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
-    0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3,
-    0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
-    0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc,
-    0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
-    0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7,
-    0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
-    0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13,
-    0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
-    0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3,
-    0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
-    0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5,
-    0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
-    0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208,
-    0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
-}
-
-local function w(x)
-    return string.gsub(x, ".", function(char)
-        return string.format("%02x", string.byte(char))
-    end)
-end
-
-local function y(z, A)
-    local x = ""
-
-    for _ = 1, A do
-        local C = z % 256
-        x = string.char(C) .. x
-        z = (z - C) / 256
-    end
-
-    return x
-end
-
-local function D(x, B)
-    local A = 0
-
-    for B = B, B + 3 do
-        A = A * 256 + string.byte(x, B)
-    end
-
-    return A
-end
-
-local function E(F, G)
-    local H = 64 - (G + 9) % 64
-
-    G = y(8 * G, 8)
-    F = F .. "\128" .. string.rep("\0", H) .. G
-
-    assert(#F % 64 == 0)
-
-    return F
-end
-
-local function I(J)
-    J[1] = 0x6a09e667
-    J[2] = 0xbb67ae85
-    J[3] = 0x3c6ef372
-    J[4] = 0xa54ff53a
-    J[5] = 0x510e527f
-    J[6] = 0x9b05688c
-    J[7] = 0x1f83d9ab
-    J[8] = 0x5be0cd19
-
-    return J
-end
-
-local function K(F, B, J)
-    local L = {}
-
-    for M = 1, 16 do
-        L[M] = D(F, B + (M - 1) * 4)
-    end
-
-    for M = 17, 64 do
-        local N = L[M - 15]
-        local O = k(t(N, 7), t(N, 18), s(N, 3))
-
-        N = L[M - 2]
-
-        L[M] = (
-            L[M - 16]
-            + O
-            + L[M - 7]
-            + k(t(N, 17), t(N, 19), s(N, 10))
-        ) % a
-    end
-
-    local d, e, l, P, Q, R, S, T =
-        J[1], J[2], J[3], J[4],
-        J[5], J[6], J[7], J[8]
-
-    for B = 1, 64 do
-        local O = k(t(d, 2), t(d, 13), t(d, 22))
-        local U = k(n(d, e), n(d, l), n(e, l))
-        local V = (O + U) % a
-
-        local W = k(t(Q, 6), t(Q, 11), t(Q, 25))
-        local X = k(n(Q, R), n(o(Q), S))
-
-        local Y = (
-            T + W + X + v[B] + L[B]
-        ) % a
-
-        T = S
-        S = R
-        R = Q
-        Q = (P + Y) % a
-        P = l
-        l = e
-        e = d
-        d = (Y + V) % a
-    end
-
-    J[1] = (J[1] + d) % a
-    J[2] = (J[2] + e) % a
-    J[3] = (J[3] + l) % a
-    J[4] = (J[4] + P) % a
-    J[5] = (J[5] + Q) % a
-    J[6] = (J[6] + R) % a
-    J[7] = (J[7] + S) % a
-    J[8] = (J[8] + T) % a
-end
-
-local function Z(F)
-    F = E(F, #F)
-
-    local J = I({})
-
-    for B = 1, #F, 64 do
-        K(F, B, J)
-    end
-
-    return w(
-        y(J[1], 4) ..
-        y(J[2], 4) ..
-        y(J[3], 4) ..
-        y(J[4], 4) ..
-        y(J[5], 4) ..
-        y(J[6], 4) ..
-        y(J[7], 4) ..
-        y(J[8], 4)
+    star.Size = UDim2.fromOffset(size, size)
+    star.Position = UDim2.fromScale(
+        math.random(),
+        math.random()
     )
-end
 
-local e
-
-local l = {
-    ["\\"] = "\\",
-    ["\""] = "\"",
-    ["\b"] = "b",
-    ["\f"] = "f",
-    ["\n"] = "n",
-    ["\r"] = "r",
-    ["\t"] = "t"
-}
-
-local P = {
-    ["/"] = "/"
-}
-
-for Q, R in pairs(l) do
-    P[R] = Q
-end
-
-local S = function(T)
-    return "\\" .. (
-        l[T] or string.format("u%04x", T:byte())
-    )
-end
-
-local B = function()
-    return "null"
-end
-
-local v = function(M, z)
-    local _ = {}
-    z = z or {}
-
-    if z[M] then
-        error("circular reference")
-    end
-
-    z[M] = true
-
-    if rawget(M, 1) ~= nil or next(M) == nil then
-        local A = 0
-
-        for Q in pairs(M) do
-            if type(Q) ~= "number" then
-                error("invalid table: mixed or invalid key types")
-            end
-
-            A = A + 1
-        end
-
-        if A ~= #M then
-            error("invalid table: sparse array")
-        end
-
-        for _, R in ipairs(M) do
-            table.insert(_, e(R, z))
-        end
-
-        z[M] = nil
-
-        return "[" .. table.concat(_, ",") .. "]"
-    else
-        for Q, R in pairs(M) do
-            if type(Q) ~= "string" then
-                error("invalid table: mixed or invalid key types")
-            end
-
-            table.insert(_, e(Q, z) .. ":" .. e(R, z))
-        end
-
-        z[M] = nil
-
-        return "{" .. table.concat(_, ",") .. "}"
-    end
-end
-
-local g = function(M)
-    return '"' .. M:gsub('[%z\1-\31\\\"]', S) .. '"'
-end
-
-local a1 = function(M)
-    if M ~= M or M <= -math.huge or M >= math.huge then
-        error("unexpected number value '" .. tostring(M) .. "'")
-    end
-
-    return string.format("%.14g", M)
-end
-
-local j = {
-    ["nil"] = B,
-    ["table"] = v,
-    ["string"] = g,
-    ["number"] = a1,
-    ["boolean"] = tostring
-}
-
-e = function(M, z)
-    local x = type(M)
-    local a2 = j[x]
-
-    if a2 then
-        return a2(M, z)
-    end
-
-    error("unexpected type '" .. x .. "'")
-end
-
-local a3 = function(M)
-    return e(M)
-end
-
-local a4
-
-local N = function(...)
-    local _ = {}
-
-    for a0 = 1, select("#", ...) do
-        _[select(a0, ...)] = true
-    end
-
-    return _
-end
-
-local L = N(" ", "\t", "\r", "\n")
-local p = N(" ", "\t", "\r", "\n", "]", "}", ",")
-local a5 = N("\\", "/", '"', "b", "f", "n", "r", "t", "u")
-local m = N("true", "false", "null")
-
-local a6 = {
-    ["true"] = true,
-    ["false"] = false,
-    ["null"] = nil
-}
-
-local a7 = function(a8, a9, aa, ab)
-    for a0 = a9, #a8 do
-        if aa[a8:sub(a0, a0)] ~= ab then
-            return a0
-        end
-    end
-
-    return #a8 + 1
-end
-
-local ac = function(a8, a9, J)
-    local ad = 1
-    local ae = 1
-
-    for a0 = 1, a9 - 1 do
-        ae = ae + 1
-
-        if a8:sub(a0, a0) == "\n" then
-            ad = ad + 1
-            ae = 1
-        end
-    end
-
-    error(string.format(
-        "%s at line %d col %d",
-        J,
-        ad,
-        ae
-    ))
-end
-
-local af = function(A)
-    local a2 = math.floor
-
-    if A <= 0x7f then
-        return string.char(A)
-    elseif A <= 0x7ff then
-        return string.char(
-            a2(A / 64) + 192,
-            A % 64 + 128
-        )
-    elseif A <= 0xffff then
-        return string.char(
-            a2(A / 4096) + 224,
-            a2(A % 4096 / 64) + 128,
-            A % 64 + 128
-        )
-    elseif A <= 0x10ffff then
-        return string.char(
-            a2(A / 262144) + 240,
-            a2(A % 262144 / 4096) + 128,
-            a2(A % 4096 / 64) + 128,
-            A % 64 + 128
-        )
-    end
-
-    error(string.format(
-        "invalid unicode codepoint '%x'",
-        A
-    ))
-end
-
-local ag = function(ah)
-    local ai = tonumber(ah:sub(1, 4), 16)
-    local aj = tonumber(ah:sub(7, 10), 16)
-
-    if aj then
-        return af(
-            (ai - 0xd800) * 0x400
-            + aj - 0xdc00
-            + 0x10000
-        )
-    else
-        return af(ai)
-    end
-end
-
-local ak = function(a8, a0)
-    local _ = ""
-    local al = a0 + 1
-    local Q = al
-
-    while al <= #a8 do
-        local am = a8:byte(al)
-
-        if am < 32 then
-            ac(a8, al, "control character in string")
-
-        elseif am == 92 then
-            _ = _ .. a8:sub(Q, al - 1)
-            al = al + 1
-
-            local T = a8:sub(al, al)
-
-            if T == "u" then
-                local an =
-                    a8:match(
-                        "^[dD][89aAbB]%x%x\\u%x%x%x%x",
-                        al + 1
-                    )
-                    or a8:match(
-                        "^%x%x%x%x",
-                        al + 1
-                    )
-                    or ac(
-                        a8,
-                        al - 1,
-                        "invalid unicode escape in string"
-                    )
-
-                _ = _ .. ag(an)
-                al = al + #an
-            else
-                if not a5[T] then
-                    ac(
-                        a8,
-                        al - 1,
-                        "invalid escape char '" .. T .. "' in string"
-                    )
-                end
-
-                _ = _ .. P[T]
-            end
-
-            Q = al + 1
-
-        elseif am == 34 then
-            _ = _ .. a8:sub(Q, al - 1)
-            return _, al + 1
-        end
-
-        al = al + 1
-    end
-
-    ac(
-        a8,
-        a0,
-        "expected closing quote for string"
-    )
-end
-
-local ao = function(a8, a0)
-    local am = a7(a8, a0, p)
-    local ah = a8:sub(a0, am - 1)
-    local A = tonumber(ah)
-
-    if not A then
-        ac(a8, a0, "invalid number '" .. ah .. "'")
-    end
-
-    return A, am
-end
-
-local ap = function(a8, a0)
-    local am = a7(a8, a0, p)
-    local aq = a8:sub(a0, am - 1)
-
-    if not m[aq] then
-        ac(a8, a0, "invalid literal '" .. aq .. "'")
-    end
-
-    return a6[aq], am
-end
-
-local ar = function(a8, a0)
-    local _ = {}
-    local A = 1
-
-    a0 = a0 + 1
-
-    while true do
-        local am
-
-        a0 = a7(a8, a0, L, true)
-
-        if a8:sub(a0, a0) == "]" then
-            a0 = a0 + 1
-            break
-        end
-
-        am, a0 = a4(a8, a0)
-        _[A] = am
-        A = A + 1
-
-        a0 = a7(a8, a0, L, true)
-
-        local as = a8:sub(a0, a0)
-        a0 = a0 + 1
-
-        if as == "]" then
-            break
-        end
-
-        if as ~= "," then
-            ac(a8, a0, "expected ']' or ','")
-        end
-    end
-
-    return _, a0
-end
-
-local at = function(a8, a0)
-    local _ = {}
-
-    a0 = a0 + 1
-
-    while true do
-        local au, M
-
-        a0 = a7(a8, a0, L, true)
-
-        if a8:sub(a0, a0) == "}" then
-            a0 = a0 + 1
-            break
-        end
-
-        if a8:sub(a0, a0) ~= '"' then
-            ac(a8, a0, "expected string for key")
-        end
-
-        au, a0 = a4(a8, a0)
-
-        a0 = a7(a8, a0, L, true)
-
-        if a8:sub(a0, a0) ~= ":" then
-            ac(a8, a0, "expected ':' after key")
-        end
-
-        a0 = a7(a8, a0 + 1, L, true)
-
-        M, a0 = a4(a8, a0)
-        _[au] = M
-
-        a0 = a7(a8, a0, L, true)
-
-        local as = a8:sub(a0, a0)
-        a0 = a0 + 1
-
-        if as == "}" then
-            break
-        end
-
-        if as ~= "," then
-            ac(a8, a0, "expected '}' or ','")
-        end
-    end
-
-    return _, a0
-end
-
-local av = {
-    ['"'] = ak,
-    ["0"] = ao,
-    ["1"] = ao,
-    ["2"] = ao,
-    ["3"] = ao,
-    ["4"] = ao,
-    ["5"] = ao,
-    ["6"] = ao,
-    ["7"] = ao,
-    ["8"] = ao,
-    ["9"] = ao,
-    ["-"] = ao,
-    ["t"] = ap,
-    ["f"] = ap,
-    ["n"] = ap,
-    ["["] = ar,
-    ["{"] = at
-}
-
-a4 = function(a8, a9)
-    local as = a8:sub(a9, a9)
-    local a2 = av[as]
-
-    if a2 then
-        return a2(a8, a9)
-    end
-
-    ac(
-        a8,
-        a9,
-        "unexpected character '" .. as .. "'"
-    )
-end
-
-local aw = function(a8)
-    if type(a8) ~= "string" then
-        error(
-            "expected argument of type string, got "
-            .. type(a8)
-        )
-    end
-
-    local _, a9 =
-        a4(a8, a7(a8, 1, L, true))
-
-    a9 = a7(a8, a9, L, true)
-
-    if a9 <= #a8 then
-        ac(a8, a9, "trailing garbage")
-    end
-
-    return _
-end
-
-local lEncode = a3
-local lDecode = aw
-local lDigest = Z
-
-----------------------------------------------------------------
--- CORE FUNCTIONS
-----------------------------------------------------------------
-
-local useNonce = true
-
-local function safeRequest(options)
-    local req =
-        request
-        or http_request
-        or syn_request
-        or (http and http.request)
-
-    if not req then
-        return nil, "HTTP requests not supported"
-    end
-
-    local success, response = pcall(function()
-        return req(options)
-    end)
-
-    if success and type(response) == "table" then
-        return response
-    end
-
-    return nil, "Connection Error: "
-        .. tostring(response or "Unknown")
-end
-
-local fSetClipboard =
-    setclipboard
-    or toclipboard
-    or function() end
-
-local fStringChar = string.char
-local fToString   = tostring
-local fOsTime      = os.time
-local fMathRandom  = math.random
-local fMathFloor   = math.floor
-
-local fGetHwid =
-    gethwid
-    or function()
-        return game:GetService("RbxAnalyticsService"):GetClientId()
-    end
-
-local cachedLink = ""
-local cachedTime = 0
-
-local host = "https://api.platoboost.com"
-
-local function checkConnectivity()
-    local response = safeRequest({
-        Url = host .. "/public/connectivity",
-        Method = "GET"
+    star.BackgroundColor3 =
+        math.random(1, 3) == 1
+        and Config.LightBlue
+        or Color3.fromRGB(180, 220, 255)
+
+    star.BackgroundTransparency = math.random(15, 55) / 100
+    star.BorderSizePixel = 0
+    star.ZIndex = 1
+    star.Parent = Background
+
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(1, 0)
+    corner.Parent = star
+
+    table.insert(Stars, {
+        Object = star,
+        Speed = math.random(3, 12) / 10000,
+        Twinkle = math.random(1, 3),
+        BaseTransparency = star.BackgroundTransparency
     })
-
-    if not response
-        or (
-            response.StatusCode ~= 200
-            and response.StatusCode ~= 429
-        )
-    then
-        host = "https://api.platoboost.net"
-
-        local fallbackResponse = safeRequest({
-            Url = host .. "/public/connectivity",
-            Method = "GET"
-        })
-
-        if not fallbackResponse then
-            return false
-        end
-    end
-
-    return true
 end
 
-local function generateNonce()
-    local str = ""
-
-    for _ = 1, 16 do
-        str = str .. fStringChar(
-            fMathFloor(
-                fMathRandom() * 26
-            ) + 97
-        )
-    end
-
-    return str
+for _ = 1, Config.StarCount do
+    createStar()
 end
 
-local function cacheLink()
-    if not checkConnectivity() then
-        return false,
-            "Delta/Network Error! Use VPN or change Executor."
-    end
+-- Moving stars
+local starConnection
 
-    if cachedTime + (10 * 60) < fOsTime() then
-        local response, err = safeRequest({
-            Url = host .. "/public/start",
-            Method = "POST",
-            Body = lEncode({
-                service = Config.ServiceId,
-                identifier = lDigest(fGetHwid())
-            }),
-            Headers = {
-                ["Content-Type"] = "application/json"
-            }
-        })
+starConnection = RunService.RenderStepped:Connect(function()
+    for _, data in ipairs(Stars) do
+        local star = data.Object
 
-        if response and response.StatusCode == 200 then
-            local decoded = lDecode(response.Body)
+        if star and star.Parent then
+            local pos = star.Position
 
-            if decoded.success then
-                cachedLink = decoded.data.url
-                cachedTime = fOsTime()
-
-                return true, cachedLink
-            end
-        end
-
-        return false, err or "Server Unreachable"
-    end
-
-    return true, cachedLink
-end
-
-local function redeemKey(key)
-    local nonce = generateNonce()
-
-    local body = {
-        identifier = lDigest(fGetHwid()),
-        key = key
-    }
-
-    if useNonce then
-        body.nonce = nonce
-    end
-
-    local response, err = safeRequest({
-        Url = host
-            .. "/public/redeem/"
-            .. fToString(Config.ServiceId),
-
-        Method = "POST",
-
-        Body = lEncode(body),
-
-        Headers = {
-            ["Content-Type"] = "application/json"
-        }
-    })
-
-    if response and response.StatusCode == 200 then
-        local decoded = lDecode(response.Body)
-
-        if decoded.success and decoded.data.valid then
-            if useNonce then
-                if decoded.data.hash
-                    == lDigest(
-                        "true"
-                        .. "-"
-                        .. nonce
-                        .. "-"
-                        .. Config.PlatoSecret
-                    )
-                then
-                    if writefile then
-                        writefile(
-                            Config.KeyFileName,
-                            key
-                        )
-                    end
-
-                    return true, "Success"
-                end
-
-                return false, "Integrity Check Failed"
-            end
-
-            if writefile then
-                writefile(
-                    Config.KeyFileName,
-                    key
-                )
-            end
-
-            return true, "Success"
-        end
-
-        return false,
-            decoded.message or "Invalid Key"
-    end
-
-    return false, err or "Server Error"
-end
-
-----------------------------------------------------------------
--- MAIN SCRIPT
-----------------------------------------------------------------
-
-local function StartMainScript()
-    local player =
-        game:GetService("Players").LocalPlayer
-
-    local pGui =
-        player:WaitForChild("PlayerGui")
-
-    if pGui:FindFirstChild(Config.OldGuiName) then
-        pGui[Config.OldGuiName]:Destroy()
-        task.wait(0.1)
-    end
-
-    _G[Config.Secret] = true
-
-    loadstring(
-        game:HttpGet(Config.MainScriptURL)
-    )()
-end
-
-----------------------------------------------------------------
--- GALAXY UI
-----------------------------------------------------------------
-
-local function CreateGUI()
-    local player =
-        game:GetService("Players").LocalPlayer
-
-    local coreGui =
-        game:GetService("CoreGui")
-
-    local targetParent =
-        pcall(function()
-            return coreGui
-        end)
-        and coreGui
-        or player:WaitForChild("PlayerGui")
-
-    if targetParent:FindFirstChild("OYB_KeySystem") then
-        targetParent.OYB_KeySystem:Destroy()
-    end
-
-    ------------------------------------------------------------
-    -- COLORS
-    ------------------------------------------------------------
-
-    local COLORS = {
-        Space       = Color3.fromRGB(5, 9, 25),
-        Space2      = Color3.fromRGB(8, 15, 38),
-        Panel       = Color3.fromRGB(11, 20, 45),
-        PanelLight  = Color3.fromRGB(17, 30, 60),
-
-        Blue        = Color3.fromRGB(55, 170, 255),
-        Cyan        = Color3.fromRGB(75, 215, 255),
-        SoftBlue    = Color3.fromRGB(120, 195, 255),
-
-        White       = Color3.fromRGB(235, 245, 255),
-        Muted       = Color3.fromRGB(145, 165, 195),
-
-        Success     = Color3.fromRGB(70, 230, 150),
-        Error       = Color3.fromRGB(255, 95, 110),
-
-        Stroke      = Color3.fromRGB(35, 100, 175)
-    }
-
-    ------------------------------------------------------------
-    -- SCREEN GUI
-    ------------------------------------------------------------
-
-    local ScreenGui = Instance.new("ScreenGui")
-    ScreenGui.Name = "OYB_KeySystem"
-    ScreenGui.ResetOnSpawn = false
-    ScreenGui.IgnoreGuiInset = true
-    ScreenGui.Parent = targetParent
-
-    ------------------------------------------------------------
-    -- BACKGROUND
-    ------------------------------------------------------------
-
-    local Background = Instance.new("Frame")
-    Background.Size = UDim2.fromScale(1, 1)
-    Background.BackgroundColor3 = COLORS.Space
-    Background.BorderSizePixel = 0
-    Background.BackgroundTransparency = 0.15
-    Background.Parent = ScreenGui
-
-    local BackgroundGradient =
-        Instance.new("UIGradient")
-
-    BackgroundGradient.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(
-            0,
-            Color3.fromRGB(3, 7, 20)
-        ),
-
-        ColorSequenceKeypoint.new(
-            0.5,
-            Color3.fromRGB(7, 15, 38)
-        ),
-
-        ColorSequenceKeypoint.new(
-            1,
-            Color3.fromRGB(3, 7, 20)
-        )
-    })
-
-    BackgroundGradient.Rotation = 45
-    BackgroundGradient.Parent = Background
-
-    ------------------------------------------------------------
-    -- STARS
-    ------------------------------------------------------------
-
-    local StarContainer = Instance.new("Frame")
-    StarContainer.Size = UDim2.fromScale(1, 1)
-    StarContainer.BackgroundTransparency = 1
-    StarContainer.Parent = Background
-
-    math.randomseed(os.time())
-
-    for i = 1, 65 do
-        local star = Instance.new("Frame")
-
-        local size = math.random(1, 3)
-
-        star.Size = UDim2.fromOffset(size, size)
-
-        star.Position = UDim2.new(
-            math.random(),
-            0,
-            math.random(),
-            0
-        )
-
-        star.BackgroundColor3 =
-            Color3.fromRGB(
-                math.random(150, 220),
-                math.random(210, 255),
-                255
+            star.Position = UDim2.new(
+                pos.X.Scale,
+                pos.X.Offset,
+                pos.Y.Scale + data.Speed,
+                pos.Y.Offset
             )
 
-        star.BackgroundTransparency =
-            math.random(30, 75) / 100
-
-        star.BorderSizePixel = 0
-        star.Parent = StarContainer
-
-        local corner = Instance.new("UICorner")
-        corner.CornerRadius = UDim.new(1, 0)
-        corner.Parent = star
-    end
-
-    ------------------------------------------------------------
-    -- MAIN PANEL
-    ------------------------------------------------------------
-
-    local MainFrame = Instance.new("Frame")
-
-    MainFrame.Size =
-        UDim2.new(0, 365, 0, 405)
-
-    MainFrame.Position =
-        UDim2.new(0.5, -182, 0.5, -202)
-
-    MainFrame.BackgroundColor3 = COLORS.Panel
-    MainFrame.BorderSizePixel = 0
-    MainFrame.Active = true
-    MainFrame.Draggable = true
-    MainFrame.Parent = ScreenGui
-
-    local MainCorner = Instance.new("UICorner")
-    MainCorner.CornerRadius = UDim.new(0, 18)
-    MainCorner.Parent = MainFrame
-
-    local MainStroke = Instance.new("UIStroke")
-    MainStroke.Thickness = 1.5
-    MainStroke.Color = COLORS.Stroke
-    MainStroke.Transparency = 0.25
-    MainStroke.Parent = MainFrame
-
-    local PanelGradient =
-        Instance.new("UIGradient")
-
-    PanelGradient.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(
-            0,
-            Color3.fromRGB(13, 26, 55)
-        ),
-
-        ColorSequenceKeypoint.new(
-            0.5,
-            Color3.fromRGB(8, 18, 40)
-        ),
-
-        ColorSequenceKeypoint.new(
-            1,
-            Color3.fromRGB(5, 12, 30)
-        )
-    })
-
-    PanelGradient.Rotation = 90
-    PanelGradient.Parent = MainFrame
-
-    ------------------------------------------------------------
-    -- TOP GLOW
-    ------------------------------------------------------------
-
-    local TopGlow = Instance.new("Frame")
-
-    TopGlow.Size =
-        UDim2.new(1, -40, 0, 2)
-
-    TopGlow.Position =
-        UDim2.new(0, 20, 0, 50)
-
-    TopGlow.BackgroundColor3 = COLORS.Cyan
-    TopGlow.BackgroundTransparency = 0.25
-    TopGlow.BorderSizePixel = 0
-    TopGlow.Parent = MainFrame
-
-    local GlowGradient =
-        Instance.new("UIGradient")
-
-    GlowGradient.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(
-            0,
-            Color3.fromRGB(30, 110, 255)
-        ),
-
-        ColorSequenceKeypoint.new(
-            0.5,
-            Color3.fromRGB(90, 225, 255)
-        ),
-
-        ColorSequenceKeypoint.new(
-            1,
-            Color3.fromRGB(30, 110, 255)
-        )
-    })
-
-    GlowGradient.Parent = TopGlow
-
-    ------------------------------------------------------------
-    -- CLOSE BUTTON
-    ------------------------------------------------------------
-
-    local CloseBtn = Instance.new("TextButton")
-
-    CloseBtn.Size =
-        UDim2.fromOffset(32, 32)
-
-    CloseBtn.Position =
-        UDim2.new(1, -43, 0, 10)
-
-    CloseBtn.BackgroundColor3 =
-        Color3.fromRGB(20, 35, 65)
-
-    CloseBtn.BackgroundTransparency = 0.15
-    CloseBtn.Text = "×"
-    CloseBtn.TextColor3 =
-        Color3.fromRGB(170, 205, 235)
-
-    CloseBtn.Font = Enum.Font.GothamBold
-    CloseBtn.TextSize = 21
-    CloseBtn.AutoButtonColor = false
-    CloseBtn.Parent = MainFrame
-
-    local CloseCorner = Instance.new("UICorner")
-    CloseCorner.CornerRadius = UDim.new(0, 9)
-    CloseCorner.Parent = CloseBtn
-
-    CloseBtn.MouseEnter:Connect(function()
-        CloseBtn.BackgroundColor3 =
-            Color3.fromRGB(80, 35, 55)
-
-        CloseBtn.TextColor3 =
-            Color3.fromRGB(255, 125, 140)
-    end)
-
-    CloseBtn.MouseLeave:Connect(function()
-        CloseBtn.BackgroundColor3 =
-            Color3.fromRGB(20, 35, 65)
-
-        CloseBtn.TextColor3 =
-            Color3.fromRGB(170, 205, 235)
-    end)
-
-    CloseBtn.MouseButton1Click:Connect(function()
-        ScreenGui:Destroy()
-    end)
-
-    ------------------------------------------------------------
-    -- TITLE
-    ------------------------------------------------------------
-
-    local Title = Instance.new("TextLabel")
-
-    Title.Size =
-        UDim2.new(1, -80, 0, 35)
-
-    Title.Position =
-        UDim2.new(0, 25, 0, 10)
-
-    Title.BackgroundTransparency = 1
-    Title.Text = Config.HubName
-    Title.TextColor3 = COLORS.White
-    Title.Font = Enum.Font.GothamBold
-    Title.TextSize = 21
-    Title.TextXAlignment = Enum.TextXAlignment.Left
-    Title.Parent = MainFrame
-
-    ------------------------------------------------------------
-    -- DESCRIPTION
-    ------------------------------------------------------------
-
-    local PromoText = Instance.new("TextLabel")
-
-    PromoText.Size =
-        UDim2.new(1, -50, 0, 30)
-
-    PromoText.Position =
-        UDim2.new(0, 25, 0, 62)
-
-    PromoText.BackgroundTransparency = 1
-    PromoText.Text = Config.HubDescription
-    PromoText.TextColor3 = COLORS.SoftBlue
-    PromoText.Font = Enum.Font.GothamMedium
-    PromoText.TextSize = 13
-    PromoText.TextXAlignment = Enum.TextXAlignment.Left
-    PromoText.Parent = MainFrame
-
-    ------------------------------------------------------------
-    -- CONTENT
-    ------------------------------------------------------------
-
-    local Content = Instance.new("Frame")
-
-    Content.Size =
-        UDim2.new(1, -50, 1, -115)
-
-    Content.Position =
-        UDim2.new(0, 25, 0, 105)
-
-    Content.BackgroundTransparency = 1
-    Content.Parent = MainFrame
-
-    local currentYOffset = 0
-
-    ------------------------------------------------------------
-    -- BUTTON HELPER
-    ------------------------------------------------------------
-
-    local function CreateButton(text, color)
-        local Button = Instance.new("TextButton")
-
-        Button.Size =
-            UDim2.new(1, 0, 0, 38)
-
-        Button.Position =
-            UDim2.new(0, 0, 0, currentYOffset)
-
-        Button.BackgroundColor3 = color
-        Button.BackgroundTransparency = 0.05
-        Button.BorderSizePixel = 0
-
-        Button.Text = text
-        Button.TextColor3 = COLORS.White
-        Button.Font = Enum.Font.GothamBold
-        Button.TextSize = 13
-        Button.AutoButtonColor = false
-        Button.Parent = Content
-
-        local Corner = Instance.new("UICorner")
-        Corner.CornerRadius = UDim.new(0, 10)
-        Corner.Parent = Button
-
-        local Stroke = Instance.new("UIStroke")
-        Stroke.Color = Color3.fromRGB(
-            math.min(color.R * 255 + 35, 255),
-            math.min(color.G * 255 + 35, 255),
-            math.min(color.B * 255 + 35, 255)
-        )
-        Stroke.Transparency = 0.55
-        Stroke.Thickness = 1
-        Stroke.Parent = Button
-
-        Button.MouseEnter:Connect(function()
-            Button.BackgroundColor3 =
-                Color3.fromRGB(
-                    math.min(color.R * 255 + 12, 255),
-                    math.min(color.G * 255 + 12, 255),
-                    math.min(color.B * 255 + 12, 255)
+            -- Wrap around
+            if star.Position.Y.Scale > 1.02 then
+                star.Position = UDim2.new(
+                    math.random(),
+                    0,
+                    -0.02,
+                    0
                 )
-        end)
+            end
 
-        Button.MouseLeave:Connect(function()
-            Button.BackgroundColor3 = color
-        end)
+            -- Gentle twinkle
+            local pulse =
+                (math.sin(os.clock() * data.Twinkle) + 1) / 2
 
-        currentYOffset =
-            currentYOffset + 46
-
-        return Button
+            star.BackgroundTransparency =
+                math.clamp(
+                    data.BaseTransparency + pulse * 0.12,
+                    0,
+                    0.9
+                )
+        end
     end
+end)
 
-    ------------------------------------------------------------
-    -- SOCIAL BUTTONS
-    ------------------------------------------------------------
+--//==================================================
+--// SHOOTING STAR
+--//==================================================
 
-    if Config.ShowDiscord then
-        local DiscordBtn = CreateButton(
-            "JOIN DISCORD",
-            Color3.fromRGB(47, 68, 145)
+local function shootingStar()
+    local meteor = Instance.new("Frame")
+
+    meteor.Size = UDim2.fromOffset(3, 70)
+    meteor.Position = UDim2.fromScale(
+        math.random(10, 90) / 100,
+        -0.1
+    )
+
+    meteor.BackgroundColor3 = Config.LightBlue
+    meteor.BackgroundTransparency = 0.15
+    meteor.BorderSizePixel = 0
+    meteor.Rotation = 25
+    meteor.ZIndex = 3
+    meteor.Parent = Background
+
+    local gradient = Instance.new("UIGradient")
+    gradient.Transparency = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 1),
+        NumberSequenceKeypoint.new(0.35, 0.15),
+        NumberSequenceKeypoint.new(1, 1)
+    })
+    gradient.Parent = meteor
+
+    local tween = TweenService:Create(
+        meteor,
+        TweenInfo.new(
+            1.2,
+            Enum.EasingStyle.Linear
+        ),
+        {
+            Position = UDim2.fromScale(
+                meteor.Position.X.Scale - 0.3,
+                1.1
+            )
+        }
+    )
+
+    tween:Play()
+
+    tween.Completed:Connect(function()
+        meteor:Destroy()
+    end)
+end
+
+task.spawn(function()
+    while ScreenGui.Parent do
+        task.wait(math.random(5, 9))
+        shootingStar()
+    end
+end)
+
+--//==================================================
+--// SPACESHIP
+--//==================================================
+
+local Ship = Instance.new("Frame")
+Ship.Name = "Spaceship"
+Ship.AnchorPoint = Vector2.new(0.5, 0.5)
+Ship.Position = UDim2.fromScale(0.5, 1.2)
+Ship.Size = UDim2.fromOffset(80, 120)
+Ship.BackgroundTransparency = 1
+Ship.ZIndex = 10
+Ship.Parent = ScreenGui
+
+-- Ship body
+local Body = Instance.new("Frame")
+Body.AnchorPoint = Vector2.new(0.5, 0.5)
+Body.Position = UDim2.fromScale(0.5, 0.42)
+Body.Size = UDim2.fromOffset(42, 75)
+Body.BackgroundColor3 = Color3.fromRGB(190, 215, 235)
+Body.BorderSizePixel = 0
+Body.Rotation = 0
+Body.ZIndex = 11
+Body.Parent = Ship
+
+local BodyCorner = Instance.new("UICorner")
+BodyCorner.CornerRadius = UDim.new(0.5, 0)
+BodyCorner.Parent = Body
+
+-- Blue cockpit
+local Cockpit = Instance.new("Frame")
+Cockpit.AnchorPoint = Vector2.new(0.5, 0.5)
+Cockpit.Position = UDim2.fromScale(0.5, 0.28)
+Cockpit.Size = UDim2.fromOffset(25, 25)
+Cockpit.BackgroundColor3 = Config.LightBlue
+Cockpit.BorderSizePixel = 0
+Cockpit.ZIndex = 12
+Cockpit.Parent = Ship
+
+local CockpitCorner = Instance.new("UICorner")
+CockpitCorner.CornerRadius = UDim.new(1, 0)
+CockpitCorner.Parent = Cockpit
+
+local CockpitStroke = Instance.new("UIStroke")
+CockpitStroke.Color = Color3.fromRGB(180, 235, 255)
+CockpitStroke.Thickness = 2
+CockpitStroke.Parent = Cockpit
+
+-- Wings
+for side = -1, 1 do
+    local wing = Instance.new("Frame")
+
+    wing.AnchorPoint = Vector2.new(0.5, 0.5)
+    wing.Position = UDim2.new(
+        0.5 + side * 0.42,
+        0,
+        0.55,
+        0
+    )
+
+    wing.Size = UDim2.fromOffset(25, 55)
+    wing.BackgroundColor3 = Color3.fromRGB(45, 95, 160)
+    wing.BorderSizePixel = 0
+    wing.Rotation = side * -12
+    wing.ZIndex = 10
+    wing.Parent = Ship
+
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 8)
+    corner.Parent = wing
+end
+
+-- Engine glow
+local Engine = Instance.new("Frame")
+Engine.AnchorPoint = Vector2.new(0.5, 0)
+Engine.Position = UDim2.fromScale(0.5, 0.78)
+Engine.Size = UDim2.fromOffset(18, 35)
+Engine.BackgroundColor3 = Config.LightBlue
+Engine.BackgroundTransparency = 0.15
+Engine.BorderSizePixel = 0
+Engine.ZIndex = 9
+Engine.Parent = Ship
+
+local EngineCorner = Instance.new("UICorner")
+EngineCorner.CornerRadius = UDim.new(1, 0)
+EngineCorner.Parent = Engine
+
+-- Engine animation
+task.spawn(function()
+    while Ship.Parent do
+        local tween = TweenService:Create(
+            Engine,
+            TweenInfo.new(
+                0.35,
+                Enum.EasingStyle.Sine,
+                Enum.EasingDirection.InOut
+            ),
+            {
+                Size = UDim2.fromOffset(18, 48),
+                BackgroundTransparency = 0.4
+            }
         )
 
-        DiscordBtn.MouseButton1Click:Connect(function()
-            fSetClipboard(Config.DiscordURL)
+        tween:Play()
+        tween.Completed:Wait()
 
-            Status.Text = "Discord link copied!"
-            Status.TextColor3 =
-                Color3.fromRGB(120, 180, 255)
-        end)
-    end
-
-    if Config.ShowInstagram then
-        local InstaBtn = CreateButton(
-            "FOLLOW INSTAGRAM",
-            Color3.fromRGB(105, 48, 105)
+        local tween2 = TweenService:Create(
+            Engine,
+            TweenInfo.new(
+                0.35,
+                Enum.EasingStyle.Sine,
+                Enum.EasingDirection.InOut
+            ),
+            {
+                Size = UDim2.fromOffset(18, 30),
+                BackgroundTransparency = 0.1
+            }
         )
 
-        InstaBtn.MouseButton1Click:Connect(function()
-            fSetClipboard(Config.InstagramURL)
+        tween2:Play()
+        tween2.Completed:Wait()
+    end
+end)
 
-            Status.Text = "Instagram link copied!"
-            Status.TextColor3 =
-                Color3.fromRGB(220, 150, 220)
-        end)
+--//==================================================
+--// INTRO TEXT
+--//==================================================
+
+local IntroText = Instance.new("TextLabel")
+IntroText.AnchorPoint = Vector2.new(0.5, 0.5)
+IntroText.Position = UDim2.fromScale(0.5, 0.73)
+IntroText.Size = UDim2.fromOffset(500, 50)
+IntroText.BackgroundTransparency = 1
+IntroText.Text = "ENTERING GALAXY..."
+IntroText.TextColor3 = Config.LightBlue
+IntroText.Font = Enum.Font.GothamBold
+IntroText.TextSize = 18
+IntroText.TextTransparency = 0
+IntroText.ZIndex = 10
+IntroText.Parent = ScreenGui
+
+--//==================================================
+--// SHIP INTRO ANIMATION
+--//==================================================
+
+local shipTween = TweenService:Create(
+    Ship,
+    TweenInfo.new(
+        Config.IntroDuration,
+        Enum.EasingStyle.Quint,
+        Enum.EasingDirection.Out
+    ),
+    {
+        Position = UDim2.fromScale(0.5, -0.25)
+    }
+)
+
+shipTween:Play()
+
+-- Slight text fade
+task.delay(1.8, function()
+    TweenService:Create(
+        IntroText,
+        TweenInfo.new(0.8),
+        {
+            TextTransparency = 1
+        }
+    ):Play()
+end)
+
+shipTween.Completed:Wait()
+
+Ship:Destroy()
+IntroText:Destroy()
+
+--//==================================================
+--// MAIN UI
+--//==================================================
+
+local MainFrame = Instance.new("Frame")
+MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+MainFrame.Position = UDim2.fromScale(0.5, 0.5)
+MainFrame.Size = UDim2.fromOffset(350, 400)
+MainFrame.BackgroundColor3 = Config.Panel
+MainFrame.BackgroundTransparency = 0.04
+MainFrame.BorderSizePixel = 0
+MainFrame.ZIndex = 20
+MainFrame.Parent = ScreenGui
+
+local MainCorner = Instance.new("UICorner")
+MainCorner.CornerRadius = UDim.new(0, 18)
+MainCorner.Parent = MainFrame
+
+local MainStroke = Instance.new("UIStroke")
+MainStroke.Color = Config.Blue
+MainStroke.Transparency = 0.35
+MainStroke.Thickness = 1.5
+MainStroke.Parent = MainFrame
+
+--// Header
+local Header = Instance.new("TextLabel")
+Header.Size = UDim2.new(1, -40, 0, 55)
+Header.Position = UDim2.fromOffset(20, 18)
+Header.BackgroundTransparency = 1
+Header.Text = Config.HubName
+Header.TextColor3 = Config.LightBlue
+Header.Font = Enum.Font.GothamBold
+Header.TextSize = 25
+Header.TextXAlignment = Enum.TextXAlignment.Left
+Header.ZIndex = 21
+Header.Parent = MainFrame
+
+local Description = Instance.new("TextLabel")
+Description.Size = UDim2.new(1, -40, 0, 35)
+Description.Position = UDim2.fromOffset(20, 62)
+Description.BackgroundTransparency = 1
+Description.Text = Config.HubDescription
+Description.TextColor3 = Color3.fromRGB(160, 185, 215)
+Description.Font = Enum.Font.Gotham
+Description.TextSize = 13
+Description.TextXAlignment = Enum.TextXAlignment.Left
+Description.ZIndex = 21
+Description.Parent = MainFrame
+
+--// Close
+local Close = Instance.new("TextButton")
+Close.Size = UDim2.fromOffset(30, 30)
+Close.Position = UDim2.new(1, -42, 0, 18)
+Close.BackgroundTransparency = 1
+Close.Text = "×"
+Close.TextColor3 = Color3.fromRGB(150, 180, 220)
+Close.Font = Enum.Font.GothamBold
+Close.TextSize = 25
+Close.ZIndex = 25
+Close.Parent = MainFrame
+
+Close.MouseButton1Click:Connect(function()
+    ScreenGui:Destroy()
+end)
+
+--// Key box
+local KeyInput = Instance.new("TextBox")
+KeyInput.Size = UDim2.new(1, -40, 0, 48)
+KeyInput.Position = UDim2.fromOffset(20, 125)
+KeyInput.BackgroundColor3 = Color3.fromRGB(5, 12, 30)
+KeyInput.TextColor3 = Color3.fromRGB(235, 245, 255)
+KeyInput.PlaceholderColor3 = Color3.fromRGB(100, 125, 160)
+KeyInput.PlaceholderText = "Enter your key..."
+KeyInput.Text = ""
+KeyInput.Font = Enum.Font.Gotham
+KeyInput.TextSize = 14
+KeyInput.ClearTextOnFocus = false
+KeyInput.ZIndex = 21
+KeyInput.Parent = MainFrame
+
+local InputCorner = Instance.new("UICorner")
+InputCorner.CornerRadius = UDim.new(0, 10)
+InputCorner.Parent = KeyInput
+
+local InputStroke = Instance.new("UIStroke")
+InputStroke.Color = Color3.fromRGB(35, 80, 140)
+InputStroke.Thickness = 1
+InputStroke.Parent = KeyInput
+
+--// Status
+local Status = Instance.new("TextLabel")
+Status.Size = UDim2.new(1, -40, 0, 30)
+Status.Position = UDim2.fromOffset(20, 185)
+Status.BackgroundTransparency = 1
+Status.Text = "Waiting for key..."
+Status.TextColor3 = Color3.fromRGB(130, 160, 195)
+Status.Font = Enum.Font.Gotham
+Status.TextSize = 12
+Status.ZIndex = 21
+Status.Parent = MainFrame
+
+--// Button creator
+local function createButton(text, position, color)
+    local button = Instance.new("TextButton")
+
+    button.Size = UDim2.new(0.46, 0, 0, 45)
+    button.Position = position
+    button.BackgroundColor3 = color
+    button.Text = text
+    button.TextColor3 = Color3.new(1, 1, 1)
+    button.Font = Enum.Font.GothamBold
+    button.TextSize = 13
+    button.AutoButtonColor = false
+    button.ZIndex = 21
+    button.Parent = MainFrame
+
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 10)
+    corner.Parent = button
+
+    local stroke = Instance.new("UIStroke")
+    stroke.Color = Color3.fromRGB(100, 190, 255)
+    stroke.Transparency = 0.55
+    stroke.Parent = button
+
+    button.MouseEnter:Connect(function()
+        TweenService:Create(
+            button,
+            TweenInfo.new(0.15),
+            {
+                BackgroundColor3 = Color3.fromRGB(
+                    math.min(color.R * 255 + 20, 255),
+                    math.min(color.G * 255 + 20, 255),
+                    math.min(color.B * 255 + 20, 255)
+                )
+            }
+        ):Play()
+    end)
+
+    button.MouseLeave:Connect(function()
+        TweenService:Create(
+            button,
+            TweenInfo.new(0.15),
+            {
+                BackgroundColor3 = color
+            }
+        ):Play()
+    end)
+
+    return button
+end
+
+local VerifyButton = createButton(
+    "VERIFY",
+    UDim2.fromOffset(20, 225),
+    Color3.fromRGB(20, 105, 205)
+)
+
+local GetKeyButton = createButton(
+    "GET KEY",
+    UDim2.new(0.54, 0, 0, 225),
+    Color3.fromRGB(25, 35, 65)
+)
+
+--//==================================================
+--// BACKEND PLACEHOLDERS
+--//==================================================
+
+local function verifyKey(key)
+    -- Put your own key verification code here.
+    -- Return:
+    -- true, "Success"
+    -- or
+    -- false, "Invalid key"
+
+    if key == "" then
+        return false, "Enter a key first."
     end
 
-    if Config.ShowYoutube then
-        local YTBtn = CreateButton(
-            "SUBSCRIBE YOUTUBE",
-            Color3.fromRGB(130, 45, 55)
-        )
+    return false, "Connect your key verification here."
+end
 
-        YTBtn.MouseButton1Click:Connect(function()
-            fSetClipboard(Config.YoutubeURL)
+local function getKey()
+    -- Put your own key-generation/link code here.
+    -- Return:
+    -- true, "https://example.com/..."
+    -- or
+    -- false, "Error message"
 
-            Status.Text = "YouTube link copied!"
-            Status.TextColor3 =
-                Color3.fromRGB(255, 140, 150)
-        end)
+    return false, "Connect your key system here."
+end
+
+--//==================================================
+--// BUTTON EVENTS
+--//==================================================
+
+VerifyButton.MouseButton1Click:Connect(function()
+    local key = KeyInput.Text
+
+    if key == "" then
+        Status.Text = "Please enter a key."
+        Status.TextColor3 = Color3.fromRGB(255, 100, 100)
+        return
     end
 
-    ------------------------------------------------------------
-    -- KEY INPUT
-    ------------------------------------------------------------
+    Status.Text = "Verifying..."
+    Status.TextColor3 = Config.LightBlue
 
-    local KeyInput = Instance.new("TextBox")
+    local success, message = verifyKey(key)
 
-    KeyInput.Size =
-        UDim2.new(1, 0, 0, 42)
+    if success then
+        Status.Text = message or "Success!"
+        Status.TextColor3 = Color3.fromRGB(80, 255, 160)
+    else
+        Status.Text = message or "Invalid key."
+        Status.TextColor3 = Color3.fromRGB(255, 100, 110)
+    end
+end)
 
-    KeyInput.Position =
-        UDim2.new(0, 0, 0, currentYOffset + 5)
+GetKeyButton.MouseButton1Click:Connect(function()
+    Status.Text = "Generating key link..."
+    Status.TextColor3 = Config.LightBlue
 
-    KeyInput.BackgroundColor3 =
-        Color3.fromRGB(6, 14, 32)
+    local success, result = getKey()
 
-    KeyInput.BackgroundTransparency = 0
-    KeyInput.BorderSizePixel = 0
+    if success then
+        Status.Text = "Key link generated!"
+        Status.TextColor3 = Color3.fromRGB(80, 210, 255)
 
-    KeyInput.PlaceholderText =
-        "Enter your key..."
-
-    KeyInput.PlaceholderColor3 =
-        Color3.fromRGB(105, 130, 165)
-
-    KeyInput.Text = ""
-    KeyInput.TextColor3 = COLORS.White
-
-    KeyInput.Font =
-        Enum.Font.GothamMedium
-
-    KeyInput.TextSize = 13
-    KeyInput.ClearTextOnFocus = false
-    KeyInput.Parent = Content
-
-    local InputCorner = Instance.new("UICorner")
-    InputCorner.CornerRadius = UDim.new(0, 10)
-    InputCorner.Parent = KeyInput
-
-    local InputStroke = Instance.new("UIStroke")
-    InputStroke.Color =
-        Color3.fromRGB(30, 75, 125)
-
-    InputStroke.Transparency = 0.35
-    InputStroke.Thickness = 1
-    InputStroke.Parent = KeyInput
-
-    KeyInput.Focused:Connect(function()
-        InputStroke.Color = COLORS.Cyan
-        InputStroke.Transparency = 0.05
-    end)
-
-    KeyInput.FocusLost:Connect(function()
-        InputStroke.Color =
-            Color3.fromRGB(30, 75, 125)
-
-        InputStroke.Transparency = 0.35
-    end)
-
-    ------------------------------------------------------------
-    -- ACTION BUTTONS
-    ------------------------------------------------------------
-
-    local VerifyBtn = Instance.new("TextButton")
-
-    VerifyBtn.Size =
-        UDim2.new(0.48, 0, 0, 40)
-
-    VerifyBtn.Position =
-        UDim2.new(0, 0, 0, currentYOffset + 58)
-
-    VerifyBtn.BackgroundColor3 =
-        Color3.fromRGB(25, 115, 205)
-
-    VerifyBtn.Text = "VERIFY"
-    VerifyBtn.TextColor3 = COLORS.White
-    VerifyBtn.Font = Enum.Font.GothamBold
-    VerifyBtn.TextSize = 13
-    VerifyBtn.AutoButtonColor = false
-    VerifyBtn.Parent = Content
-
-    local VerifyCorner = Instance.new("UICorner")
-    VerifyCorner.CornerRadius = UDim.new(0, 10)
-    VerifyCorner.Parent = VerifyBtn
-
-    local VerifyStroke = Instance.new("UIStroke")
-    VerifyStroke.Color = COLORS.Cyan
-    VerifyStroke.Transparency = 0.55
-    VerifyStroke.Parent = VerifyBtn
-
-    local GetKeyBtn = Instance.new("TextButton")
-
-    GetKeyBtn.Size =
-        UDim2.new(0.48, 0, 0, 40)
-
-    GetKeyBtn.Position =
-        UDim2.new(0.52, 0, 0, currentYOffset + 58)
-
-    GetKeyBtn.BackgroundColor3 =
-        Color3.fromRGB(19, 38, 70)
-
-    GetKeyBtn.Text = "GET KEY"
-    GetKeyBtn.TextColor3 = COLORS.White
-    GetKeyBtn.Font = Enum.Font.GothamBold
-    GetKeyBtn.TextSize = 13
-    GetKeyBtn.AutoButtonColor = false
-    GetKeyBtn.Parent = Content
-
-    local GetKeyCorner = Instance.new("UICorner")
-    GetKeyCorner.CornerRadius = UDim.new(0, 10)
-    GetKeyCorner.Parent = GetKeyBtn
-
-    local GetKeyStroke = Instance.new("UIStroke")
-    GetKeyStroke.Color =
-        Color3.fromRGB(50, 105, 165)
-
-    GetKeyStroke.Transparency = 0.45
-    GetKeyStroke.Parent = GetKeyBtn
-
-    ------------------------------------------------------------
-    -- STATUS
-    ------------------------------------------------------------
-
-    local Status = Instance.new("TextLabel")
-
-    Status.Name = "StatusLabel"
-
-    Status.Size =
-        UDim2.new(1, 0, 0, 30)
-
-    Status.Position =
-        UDim2.new(0, 0, 0, currentYOffset + 108)
-
-    Status.BackgroundTransparency = 1
-    Status.Text = "Waiting for input..."
-    Status.TextColor3 = COLORS.Muted
-    Status.Font = Enum.Font.GothamMedium
-    Status.TextSize = 12
-    Status.TextWrapped = true
-    Status.Parent = Content
-
-    ------------------------------------------------------------
-    -- HOVER EFFECTS
-    ------------------------------------------------------------
-
-    VerifyBtn.MouseEnter:Connect(function()
-        VerifyBtn.BackgroundColor3 =
-            Color3.fromRGB(35, 135, 225)
-    end)
-
-    VerifyBtn.MouseLeave:Connect(function()
-        VerifyBtn.BackgroundColor3 =
-            Color3.fromRGB(25, 115, 205)
-    end)
-
-    GetKeyBtn.MouseEnter:Connect(function()
-        GetKeyBtn.BackgroundColor3 =
-            Color3.fromRGB(27, 52, 90)
-    end)
-
-    GetKeyBtn.MouseLeave:Connect(function()
-        GetKeyBtn.BackgroundColor3 =
-            Color3.fromRGB(19, 38, 70)
-    end)
-
-    ------------------------------------------------------------
-    -- VERIFY
-    ------------------------------------------------------------
-
-    VerifyBtn.MouseButton1Click:Connect(function()
-        local key = KeyInput.Text
-
-        if key == "" then
-            Status.Text = "Please enter a key."
-            Status.TextColor3 = COLORS.Error
-            return
+        if setclipboard then
+            setclipboard(result)
         end
+    else
+        Status.Text = result or "Unable to generate link."
+        Status.TextColor3 = Color3.fromRGB(255, 100, 110)
+    end
+end)
 
-        Status.Text = "Verifying key..."
-        Status.TextColor3 = COLORS.SoftBlue
+--//==================================================
+--// UI FADE IN
+--//==================================================
 
-        local success, msg =
-            redeemKey(key)
+MainFrame.BackgroundTransparency = 1
 
-        if success then
-            Status.Text = "Verified! Loading..."
-            Status.TextColor3 = COLORS.Success
-
-            task.wait(0.5)
-
-            ScreenGui:Destroy()
-            StartMainScript()
-        else
-            Status.Text = tostring(msg)
-            Status.TextColor3 = COLORS.Error
-        end
-    end)
-
-    ------------------------------------------------------------
-    -- GET KEY
-    ------------------------------------------------------------
-
-    GetKeyBtn.MouseButton1Click:Connect(function()
-        Status.Text = "Getting key link..."
-        Status.TextColor3 = COLORS.SoftBlue
-
-        local success, link =
-            cacheLink()
-
-        if success then
-            fSetClipboard(link)
-
-            Status.Text = "Key link copied!"
-            Status.TextColor3 = COLORS.Success
-        else
-            Status.Text = tostring(link)
-            Status.TextColor3 = COLORS.Error
-        end
-    end)
-
-    ------------------------------------------------------------
-    -- AUTO LOGIN
-    ------------------------------------------------------------
-
-    if isfile
-        and isfile(Config.KeyFileName)
-    then
-        local savedKey =
-            readfile(Config.KeyFileName)
-
-        if savedKey ~= "" then
-            Status.Text =
-                "Saved key found. Verifying..."
-
-            Status.TextColor3 =
-                COLORS.SoftBlue
-
-            task.spawn(function()
-                local success, msg =
-                    redeemKey(savedKey)
-
-                if success then
-                    Status.Text =
-                        "Auto-login successful!"
-
-                    Status.TextColor3 =
-                        COLORS.Success
-
-                    task.wait(0.5)
-
-                    ScreenGui:Destroy()
-                    StartMainScript()
-                else
-                    Status.Text =
-                        "Saved key expired or invalid."
-
-                    Status.TextColor3 =
-                        Color3.fromRGB(
-                            255,
-                            175,
-                            80
-                        )
-                end
-            end)
-        end
+for _, object in ipairs(MainFrame:GetDescendants()) do
+    if object:IsA("TextLabel") or object:IsA("TextButton") or object:IsA("TextBox") then
+        object.TextTransparency = 1
+    elseif object:IsA("UIStroke") then
+        object.Transparency = 1
     end
 end
 
-----------------------------------------------------------------
--- START
-----------------------------------------------------------------
+TweenService:Create(
+    MainFrame,
+    TweenInfo.new(0.7, Enum.EasingStyle.Quint, Enum.EasingDirection.Out),
+    {
+        BackgroundTransparency = 0.04
+    }
+):Play()
 
-local player =
-    game:GetService("Players").LocalPlayer
+for _, object in ipairs(MainFrame:GetDescendants()) do
+    if object:IsA("TextLabel") or object:IsA("TextButton") or object:IsA("TextBox") then
+        TweenService:Create(
+            object,
+            TweenInfo.new(0.7),
+            {
+                TextTransparency = 0
+            }
+        ):Play()
 
-local pGui =
-    player:WaitForChild("PlayerGui")
-
-if pGui:FindFirstChild(Config.MainGuiName) then
-    StartMainScript()
-    return
+    elseif object:IsA("UIStroke") then
+        TweenService:Create(
+            object,
+            TweenInfo.new(0.7),
+            {
+                Transparency = 0.35
+            }
+        ):Play()
+    end
 end
 
-CreateGUI()
+--//==================================================
+--// DRAGGING
+--//==================================================
+
+local dragging = false
+local dragStart
+local startPosition
+
+Header.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1
+        or input.UserInputType == Enum.UserInputType.Touch then
+
+        dragging = true
+        dragStart = input.Position
+        startPosition = MainFrame.Position
+
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+Header.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement
+        or input.UserInputType == Enum.UserInputType.Touch then
+
+        local connection
+
+        connection = RunService.RenderStepped:Connect(function()
+            if not dragging then
+                connection:Disconnect()
+                return
+            end
+
+            local delta = input.Position - dragStart
+
+            MainFrame.Position = UDim2.new(
+                startPosition.X.Scale,
+                startPosition.X.Offset + delta.X,
+                startPosition.Y.Scale,
+                startPosition.Y.Offset + delta.Y
+            )
+        end)
+    end
+end)
