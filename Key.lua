@@ -16,18 +16,21 @@
 ]]
 
 local Config = {
-    -- [1] Platoboost Settings
-    ServiceId   = 30834,
-    PlatoSecret = "37b9d1d0-5c79-4d26-bc60-42f94917d279",
+    -- [1] Platoboost
+    ServiceId = 30834,
 
-    -- [2] Main Script Secret
+    -- IMPORTANT:
+    -- Replace this with your NEW rotated Platoboost secret.
+    PlatoSecret = "REPLACE_WITH_YOUR_NEW_PLATO_SECRET",
+
+    -- [2] Main script gate
     Secret = "zolopogi123",
 
-    -- [3] Main Script
+    -- [3] Main script
     MainScriptURL =
         "https://raw.githubusercontent.com/Zolorblx/Keysystem/refs/heads/main/ZoloScript.lua",
 
-    -- [4] Social Media
+    -- [4] Social
     ShowDiscord = false,
     DiscordURL = "https://discord.gg/kT55J724BK",
 
@@ -38,119 +41,139 @@ local Config = {
     YoutubeURL =
         "https://www.youtube.com/channel/UCAlXXV1Hbvf7WbfXARuVtiQ",
 
-    -- [5] Key File
+    -- [5] Key storage
     KeyFileName = "Mykey.txt",
 
     -- [6] GUI
     OldGuiName = "KARINDERYA",
     MainGuiName = "KARINDERYA",
 
-    -- [7] Hub Information
+    -- [7] Hub
     HubName = "ZOLO",
     HubDescription = "5$ for lifetime?"
 }
 
 ----------------------------------------------------------------
--- SHA256 / JSON LIBRARY
+-- SHA256
 ----------------------------------------------------------------
 
-local a = 2 ^ 32
-local b = a - 1
+local UINT32 = 2 ^ 32
+local UINT32_MAX = UINT32 - 1
 
-local function c(d, e)
-    local f, g = 0, 1
+local function bxor(a, b)
+    local result = 0
+    local bit = 1
 
-    while d ~= 0 or e ~= 0 do
-        local h, i = d % 2, e % 2
-        local j = (h + i) % 2
+    while a ~= 0 or b ~= 0 do
+        local abit = a % 2
+        local bbit = b % 2
 
-        f = f + j * g
-        d = math.floor(d / 2)
-        e = math.floor(e / 2)
-        g = g * 2
-    end
-
-    return f % a
-end
-
-local function k(d, e, l, ...)
-    local m
-
-    if e then
-        d = d % a
-        e = e % a
-        m = c(d, e)
-
-        if l then
-            m = k(m, l, ...)
+        if abit ~= bbit then
+            result = result + bit
         end
 
-        return m
-    elseif d then
-        return d % a
+        a = math.floor(a / 2)
+        b = math.floor(b / 2)
+        bit = bit * 2
     end
 
-    return 0
+    return result % UINT32
 end
 
-local function n(d, e, l, ...)
-    local m
+local function band(a, b, c, ...)
+    if b == nil then
+        return a % UINT32
+    end
 
-    if e then
-        d = d % a
-        e = e % a
-        m = (d + e - c(d, e)) / 2
+    local result = 0
+    local bit = 1
 
-        if l then
-            m = n(m, l, ...)
+    while a ~= 0 or b ~= 0 do
+        local abit = a % 2
+        local bbit = b % 2
+
+        if abit == 1 and bbit == 1 then
+            result = result + bit
         end
 
-        return m
-    elseif d then
-        return d % a
+        a = math.floor(a / 2)
+        b = math.floor(b / 2)
+        bit = bit * 2
     end
 
-    return b
-end
+    result = result % UINT32
 
-local function o(p)
-    return b - p
-end
+    local args = {...}
 
-local function q(d, r)
-    if r < 0 then
-        return lshift(d, -r)
+    for i = 1, #args do
+        result = band(result, args[i])
     end
 
-    return math.floor(d % 2 ^ 32 / 2 ^ r)
+    return result
 end
 
-local function s(p, r)
-    if r > 31 or r < -31 then
-        return 0
+local function bor(a, b, c, ...)
+    if b == nil then
+        return a % UINT32
     end
 
-    return q(p % a, r)
-end
+    local result = 0
+    local bit = 1
 
-function lshift(d, r)
-    if r < 0 then
-        return s(d, -r)
+    while a ~= 0 or b ~= 0 do
+        local abit = a % 2
+        local bbit = b % 2
+
+        if abit == 1 or bbit == 1 then
+            result = result + bit
+        end
+
+        a = math.floor(a / 2)
+        b = math.floor(b / 2)
+        bit = bit * 2
     end
 
-    return d * 2 ^ r % 2 ^ 32
+    result = result % UINT32
+
+    local args = {...}
+
+    for i = 1, #args do
+        result = bor(result, args[i])
+    end
+
+    return result
 end
 
-local function t(p, r)
-    p = p % a
-    r = r % 32
-
-    local u = n(p, 2 ^ r - 1)
-
-    return s(p, r) + lshift(u, 32 - r)
+local function bnot(x)
+    return UINT32_MAX - x
 end
 
-local v = {
+local function rshift(x, n)
+    if n < 0 then
+        return lshift(x, -n)
+    end
+
+    return math.floor((x % UINT32) / (2 ^ n))
+end
+
+local function lshift(x, n)
+    if n < 0 then
+        return rshift(x, -n)
+    end
+
+    return (x * (2 ^ n)) % UINT32
+end
+
+local function rrotate(x, n)
+    n = n % 32
+
+    local right = rshift(x, n)
+    local left = lshift(x, 32 - n)
+
+    return (right + left) % UINT32
+end
+
+local K = {
     0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5,
     0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
     0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3,
@@ -169,617 +192,205 @@ local v = {
     0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
 }
 
-local function w(x)
-    return string.gsub(x, ".", function(l)
-        return string.format("%02x", string.byte(l))
+local function toHex(str)
+    return string.gsub(str, ".", function(char)
+        return string.format("%02x", string.byte(char))
     end)
 end
 
-local function y(z, A)
-    local x = ""
+local function intToBytes(num, count)
+    local result = ""
 
-    for B = 1, A do
-        local C = z % 256
-        x = string.char(C) .. x
-        z = (z - C) / 256
+    for _ = 1, count do
+        local byte = num % 256
+        result = string.char(byte) .. result
+        num = (num - byte) / 256
     end
 
-    return x
+    return result
 end
 
-local function D(x, B)
-    local A = 0
+local function readUint32(str, index)
+    local result = 0
 
-    for B = B, B + 3 do
-        A = A * 256 + string.byte(x, B)
+    for i = index, index + 3 do
+        result = result * 256 + string.byte(str, i)
     end
 
-    return A
+    return result
 end
 
-local function E(F, G)
-    local H = 64 - (G + 9) % 64
-    G = y(8 * G, 8)
+local function padMessage(message)
+    local bitLength = #message * 8
+    local padding = 64 - ((#message + 9) % 64)
 
-    F = F .. "\128" .. string.rep("\0", H) .. G
-
-    assert(#F % 64 == 0)
-
-    return F
+    return message
+        .. "\128"
+        .. string.rep("\0", padding)
+        .. intToBytes(bitLength, 8)
 end
 
-local function I(J)
-    J[1] = 0x6a09e667
-    J[2] = 0xbb67ae85
-    J[3] = 0x3c6ef372
-    J[4] = 0xa54ff53a
-    J[5] = 0x510e527f
-    J[6] = 0x9b05688c
-    J[7] = 0x1f83d9ab
-    J[8] = 0x5be0cd19
-
-    return J
+local function shaInit()
+    return {
+        0x6a09e667,
+        0xbb67ae85,
+        0x3c6ef372,
+        0xa54ff53a,
+        0x510e527f,
+        0x9b05688c,
+        0x1f83d9ab,
+        0x5be0cd19
+    }
 end
 
-local function K(F, B, J)
-    local L = {}
+local function shaProcess(chunk, hash)
+    local words = {}
 
-    for M = 1, 16 do
-        L[M] = D(F, B + (M - 1) * 4)
-    end
-
-    for M = 17, 64 do
-        local N = L[M - 15]
-        local O = k(t(N, 7), t(N, 18), s(N, 3))
-
-        N = L[M - 2]
-
-        L[M] =
-            (L[M - 16]
-            + O
-            + L[M - 7]
-            + k(t(N, 17), t(N, 19), s(N, 10))) % a
-    end
-
-    local d, e, l, P, Q, R, S, T =
-        J[1], J[2], J[3], J[4],
-        J[5], J[6], J[7], J[8]
-
-    for B = 1, 64 do
-        local O = k(t(d, 2), t(d, 13), t(d, 22))
-        local U = k(n(d, e), n(d, l), n(e, l))
-        local V = (O + U) % a
-
-        local W = k(t(Q, 6), t(Q, 11), t(Q, 25))
-        local X = k(n(Q, R), n(o(Q), S))
-
-        local Y =
-            (T + W + X + v[B] + L[B]) % a
-
-        T = S
-        S = R
-        R = Q
-        Q = (P + Y) % a
-        P = l
-        l = e
-        e = d
-        d = (Y + V) % a
-    end
-
-    J[1] = (J[1] + d) % a
-    J[2] = (J[2] + e) % a
-    J[3] = (J[3] + l) % a
-    J[4] = (J[4] + P) % a
-    J[5] = (J[5] + Q) % a
-    J[6] = (J[6] + R) % a
-    J[7] = (J[7] + S) % a
-    J[8] = (J[8] + T) % a
-end
-
-local function Z(F)
-    F = E(F, #F)
-
-    local J = I({})
-
-    for B = 1, #F, 64 do
-        K(F, B, J)
-    end
-
-    return w(
-        y(J[1], 4) ..
-        y(J[2], 4) ..
-        y(J[3], 4) ..
-        y(J[4], 4) ..
-        y(J[5], 4) ..
-        y(J[6], 4) ..
-        y(J[7], 4) ..
-        y(J[8], 4)
-    )
-end
-
-local e
-
-local l = {
-    ["\\"] = "\\",
-    ["\""] = "\"",
-    ["\b"] = "b",
-    ["\f"] = "f",
-    ["\n"] = "n",
-    ["\r"] = "r",
-    ["\t"] = "t"
-}
-
-local P = {
-    ["/"] = "/"
-}
-
-for Q, R in pairs(l) do
-    P[R] = Q
-end
-
-local S = function(T)
-    return "\\" ..
-        (l[T] or string.format("u%04x", T:byte()))
-end
-
-local B = function(M)
-    return "null"
-end
-
-local v = function(M, z)
-    local _ = {}
-
-    z = z or {}
-
-    if z[M] then
-        error("circular reference")
-    end
-
-    z[M] = true
-
-    if rawget(M, 1) ~= nil or next(M) == nil then
-        local A = 0
-
-        for Q in pairs(M) do
-            if type(Q) ~= "number" then
-                error("invalid table: mixed or invalid key types")
-            end
-
-            A = A + 1
-        end
-
-        if A ~= #M then
-            error("invalid table: sparse array")
-        end
-
-        for a0, R in ipairs(M) do
-            table.insert(_, e(R, z))
-        end
-
-        z[M] = nil
-
-        return "[" .. table.concat(_, ",") .. "]"
-    else
-        for Q, R in pairs(M) do
-            if type(Q) ~= "string" then
-                error("invalid table: mixed or invalid key types")
-            end
-
-            table.insert(_, e(Q, z) .. ":" .. e(R, z))
-        end
-
-        z[M] = nil
-
-        return "{" .. table.concat(_, ",") .. "}"
-    end
-end
-
-local g = function(M)
-    return '"' .. M:gsub('[%z\1-\31\\\"]', S) .. '"'
-end
-
-local a1 = function(M)
-    if M ~= M or M <= -math.huge or M >= math.huge then
-        error("unexpected number value '" .. tostring(M) .. "'")
-    end
-
-    return string.format("%.14g", M)
-end
-
-local j = {
-    ["nil"] = B,
-    ["table"] = v,
-    ["string"] = g,
-    ["number"] = a1,
-    ["boolean"] = tostring
-}
-
-e = function(M, z)
-    local x = type(M)
-    local a2 = j[x]
-
-    if a2 then
-        return a2(M, z)
-    end
-
-    error("unexpected type '" .. x .. "'")
-end
-
-local a3 = function(M)
-    return e(M)
-end
-
-local a4
-
-local N = function(...)
-    local _ = {}
-
-    for a0 = 1, select("#", ...) do
-        _[select(a0, ...)] = true
-    end
-
-    return _
-end
-
-local L = N(" ", "\t", "\r", "\n")
-local p = N(" ", "\t", "\r", "\n", "]", "}", ",")
-
-local a5 = N("\\", "/", '"', "b", "f", "n", "r", "t", "u")
-local m = N("true", "false", "null")
-
-local a6 = {
-    ["true"] = true,
-    ["false"] = false,
-    ["null"] = nil
-}
-
-local a7 = function(a8, a9, aa, ab)
-    for a0 = a9, #a8 do
-        if aa[a8:sub(a0, a0)] ~= ab then
-            return a0
-        end
-    end
-
-    return #a8 + 1
-end
-
-local ac = function(a8, a9, J)
-    local ad = 1
-    local ae = 1
-
-    for a0 = 1, a9 - 1 do
-        ae = ae + 1
-
-        if a8:sub(a0, a0) == "\n" then
-            ad = ad + 1
-            ae = 1
-        end
-    end
-
-    error(
-        string.format(
-            "%s at line %d col %d",
-            J,
-            ad,
-            ae
-        )
-    )
-end
-
-local af = function(A)
-    local a2 = math.floor
-
-    if A <= 0x7f then
-        return string.char(A)
-    elseif A <= 0x7ff then
-        return string.char(
-            a2(A / 64) + 192,
-            A % 64 + 128
-        )
-    elseif A <= 0xffff then
-        return string.char(
-            a2(A / 4096) + 224,
-            a2(A % 4096 / 64) + 128,
-            A % 64 + 128
-        )
-    elseif A <= 0x10ffff then
-        return string.char(
-            a2(A / 262144) + 240,
-            a2(A % 262144 / 4096) + 128,
-            a2(A % 4096 / 64) + 128,
-            A % 64 + 128
+    for i = 1, 16 do
+        words[i] = readUint32(
+            chunk,
+            (i - 1) * 4 + 1
         )
     end
 
-    error(
-        string.format(
-            "invalid unicode codepoint '%x'",
-            A
-        )
-    )
-end
-
-local ag = function(ah)
-    local ai = tonumber(ah:sub(1, 4), 16)
-    local aj = tonumber(ah:sub(7, 10), 16)
-
-    if aj then
-        return af(
-            (ai - 0xd800) * 0x400
-            + aj - 0xdc00
-            + 0x10000
-        )
-    end
-
-    return af(ai)
-end
-
-local ak = function(a8, a0)
-    local _ = ""
-    local al = a0 + 1
-    local Q = al
-
-    while al <= #a8 do
-        local am = a8:byte(al)
-
-        if am < 32 then
-            ac(a8, al, "control character in string")
-        elseif am == 92 then
-            _ = _ .. a8:sub(Q, al - 1)
-            al = al + 1
-
-            local T = a8:sub(al, al)
-
-            if T == "u" then
-                local an =
-                    a8:match(
-                        "^[dD][89aAbB]%x%x\\u%x%x%x%x",
-                        al + 1
-                    )
-                    or a8:match(
-                        "^%x%x%x%x",
-                        al + 1
-                    )
-                    or ac(
-                        a8,
-                        al - 1,
-                        "invalid unicode escape in string"
-                    )
-
-                _ = _ .. ag(an)
-                al = al + #an
-            else
-                if not a5[T] then
-                    ac(
-                        a8,
-                        al - 1,
-                        "invalid escape char '" .. T .. "' in string"
-                    )
-                end
-
-                _ = _ .. P[T]
-            end
-
-            Q = al + 1
-        elseif am == 34 then
-            _ = _ .. a8:sub(Q, al - 1)
-            return _, al + 1
-        end
-
-        al = al + 1
-    end
-
-    ac(
-        a8,
-        a0,
-        "expected closing quote for string"
-    )
-end
-
-local ao = function(a8, a0)
-    local am = a7(a8, a0, p)
-    local ah = a8:sub(a0, am - 1)
-    local A = tonumber(ah)
-
-    if not A then
-        ac(
-            a8,
-            a0,
-            "invalid number '" .. ah .. "'"
-        )
-    end
-
-    return A, am
-end
-
-local ap = function(a8, a0)
-    local am = a7(a8, a0, p)
-    local aq = a8:sub(a0, am - 1)
-
-    if not m[aq] then
-        ac(
-            a8,
-            a0,
-            "invalid literal '" .. aq .. "'"
-        )
-    end
-
-    return a6[aq], am
-end
-
-local ar = function(a8, a0)
-    local _ = {}
-    local A = 1
-
-    a0 = a0 + 1
-
-    while true do
-        local am
-
-        a0 = a7(a8, a0, L, true)
-
-        if a8:sub(a0, a0) == "]" then
-            a0 = a0 + 1
-            break
-        end
-
-        am, a0 = a4(a8, a0)
-        _[A] = am
-        A = A + 1
-
-        a0 = a7(a8, a0, L, true)
-
-        local as = a8:sub(a0, a0)
-
-        a0 = a0 + 1
-
-        if as == "]" then
-            break
-        end
-
-        if as ~= "," then
-            ac(
-                a8,
-                a0,
-                "expected ']' or ','"
+    for i = 17, 64 do
+        local s0 =
+            bxor(
+                rrotate(words[i - 15], 7),
+                rrotate(words[i - 15], 18),
+                rshift(words[i - 15], 3)
             )
-        end
+
+        local s1 =
+            bxor(
+                rrotate(words[i - 2], 17),
+                rrotate(words[i - 2], 19),
+                rshift(words[i - 2], 10)
+            )
+
+        words[i] =
+            (
+                words[i - 16]
+                + s0
+                + words[i - 7]
+                + s1
+            ) % UINT32
     end
 
-    return _, a0
-end
+    local a = hash[1]
+    local b = hash[2]
+    local c = hash[3]
+    local d = hash[4]
+    local e = hash[5]
+    local f = hash[6]
+    local g = hash[7]
+    local h = hash[8]
 
-local at = function(a8, a0)
-    local _ = {}
-
-    a0 = a0 + 1
-
-    while true do
-        local au, M
-
-        a0 = a7(a8, a0, L, true)
-
-        if a8:sub(a0, a0) == "}" then
-            a0 = a0 + 1
-            break
-        end
-
-        if a8:sub(a0, a0) ~= '"' then
-            ac(
-                a8,
-                a0,
-                "expected string for key"
+    for i = 1, 64 do
+        local S1 =
+            bxor(
+                rrotate(e, 6),
+                rrotate(e, 11),
+                rrotate(e, 25)
             )
-        end
 
-        au, a0 = a4(a8, a0)
-
-        a0 = a7(a8, a0, L, true)
-
-        if a8:sub(a0, a0) ~= ":" then
-            ac(
-                a8,
-                a0,
-                "expected ':' after key"
+        local ch =
+            bxor(
+                band(e, f),
+                band(bnot(e), g)
             )
-        end
 
-        a0 = a7(a8, a0 + 1, L, true)
+        local temp1 =
+            (
+                h
+                + S1
+                + ch
+                + K[i]
+                + words[i]
+            ) % UINT32
 
-        M, a0 = a4(a8, a0)
-
-        _[au] = M
-
-        a0 = a7(a8, a0, L, true)
-
-        local as = a8:sub(a0, a0)
-
-        a0 = a0 + 1
-
-        if as == "}" then
-            break
-        end
-
-        if as ~= "," then
-            ac(
-                a8,
-                a0,
-                "expected '}' or ','"
+        local S0 =
+            bxor(
+                rrotate(a, 2),
+                rrotate(a, 13),
+                rrotate(a, 22)
             )
-        end
+
+        local maj =
+            bxor(
+                band(a, b),
+                band(a, c),
+                band(b, c)
+            )
+
+        local temp2 =
+            (S0 + maj) % UINT32
+
+        h = g
+        g = f
+        f = e
+        e = (d + temp1) % UINT32
+        d = c
+        c = b
+        b = a
+        a = (temp1 + temp2) % UINT32
     end
 
-    return _, a0
+    hash[1] = (hash[1] + a) % UINT32
+    hash[2] = (hash[2] + b) % UINT32
+    hash[3] = (hash[3] + c) % UINT32
+    hash[4] = (hash[4] + d) % UINT32
+    hash[5] = (hash[5] + e) % UINT32
+    hash[6] = (hash[6] + f) % UINT32
+    hash[7] = (hash[7] + g) % UINT32
+    hash[8] = (hash[8] + h) % UINT32
 end
 
-local av = {
-    ['"'] = ak,
-    ["0"] = ao,
-    ["1"] = ao,
-    ["2"] = ao,
-    ["3"] = ao,
-    ["4"] = ao,
-    ["5"] = ao,
-    ["6"] = ao,
-    ["7"] = ao,
-    ["8"] = ao,
-    ["9"] = ao,
-    ["-"] = ao,
-    ["t"] = ap,
-    ["f"] = ap,
-    ["n"] = ap,
-    ["["] = ar,
-    ["{"] = at
-}
+local function sha256(message)
+    local padded = padMessage(message)
+    local hash = shaInit()
 
-a4 = function(a8, a9)
-    local as = a8:sub(a9, a9)
-    local a2 = av[as]
-
-    if a2 then
-        return a2(a8, a9)
-    end
-
-    ac(
-        a8,
-        a9,
-        "unexpected character '" .. as .. "'"
-    )
-end
-
-local aw = function(a8)
-    if type(a8) ~= "string" then
-        error(
-            "expected argument of type string, got "
-            .. type(a8)
+    for index = 1, #padded, 64 do
+        shaProcess(
+            padded:sub(index, index + 63),
+            hash
         )
     end
 
-    local _, a9 =
-        a4(a8, a7(a8, 1, L, true))
+    local output = ""
 
-    a9 = a7(a8, a9, L, true)
-
-    if a9 <= #a8 then
-        ac(
-            a8,
-            a9,
-            "trailing garbage"
-        )
+    for i = 1, 8 do
+        output =
+            output
+            .. intToBytes(hash[i], 4)
     end
 
-    return _
+    return toHex(output)
 end
 
-local lEncode = a3
-local lDecode = aw
-local lDigest = Z
+local lDigest = sha256
 
 ----------------------------------------------------------------
--- REQUEST / PLATOBOOST
+-- JSON
 ----------------------------------------------------------------
 
-local useNonce = true
+local HttpService =
+    game:GetService("HttpService")
+
+local function jsonEncode(value)
+    return HttpService:JSONEncode(value)
+end
+
+local function jsonDecode(value)
+    return HttpService:JSONDecode(value)
+end
+
+local lEncode = jsonEncode
+local lDecode = jsonDecode
+
+----------------------------------------------------------------
+-- HTTP
+----------------------------------------------------------------
 
 local function safeRequest(options)
     local req =
@@ -789,7 +400,8 @@ local function safeRequest(options)
         or (http and http.request)
 
     if not req then
-        return nil, "HTTP requests not supported"
+        return nil,
+            "HTTP requests are not supported."
     end
 
     local success, response =
@@ -797,25 +409,27 @@ local function safeRequest(options)
             return req(options)
         end)
 
-    if success and type(response) == "table" then
+    if success
+        and type(response) == "table"
+    then
         return response
     end
 
     return nil,
         "Connection Error: "
-        .. tostring(response or "Unknown")
+        .. tostring(
+            response or "Unknown"
+        )
 end
+
+----------------------------------------------------------------
+-- HELPERS
+----------------------------------------------------------------
 
 local fSetClipboard =
     setclipboard
     or toclipboard
     or function() end
-
-local fStringChar = string.char
-local fToString = tostring
-local fOsTime = os.time
-local fMathRandom = math.random
-local fMathFloor = math.floor
 
 local fGetHwid =
     gethwid
@@ -828,7 +442,10 @@ local fGetHwid =
 local cachedLink = ""
 local cachedTime = 0
 
-local host = "https://api.platoboost.com"
+local host =
+    "https://api.platoboost.com"
+
+local useNonce = true
 
 ----------------------------------------------------------------
 -- CONNECTIVITY
@@ -837,30 +454,35 @@ local host = "https://api.platoboost.com"
 local function checkConnectivity()
     local response =
         safeRequest({
-            Url = host .. "/public/connectivity",
+            Url =
+                host
+                .. "/public/connectivity",
+
             Method = "GET"
         })
 
-    if not response
-        or (
-            response.StatusCode ~= 200
-            and response.StatusCode ~= 429
+    if response
+        and (
+            response.StatusCode == 200
+            or response.StatusCode == 429
         )
     then
-        host = "https://api.platoboost.net"
-
-        local fallbackResponse =
-            safeRequest({
-                Url = host .. "/public/connectivity",
-                Method = "GET"
-            })
-
-        if not fallbackResponse then
-            return false
-        end
+        return true
     end
 
-    return true
+    host =
+        "https://api.platoboost.net"
+
+    local fallback =
+        safeRequest({
+            Url =
+                host
+                .. "/public/connectivity",
+
+            Method = "GET"
+        })
+
+    return fallback ~= nil
 end
 
 ----------------------------------------------------------------
@@ -868,94 +490,139 @@ end
 ----------------------------------------------------------------
 
 local function generateNonce()
-    local str = ""
+    local chars = ""
 
     for _ = 1, 16 do
-        str =
-            str
-            .. fStringChar(
-                fMathFloor(
-                    fMathRandom() * 26
-                ) + 97
+        chars =
+            chars
+            .. string.char(
+                math.random(97, 122)
             )
     end
 
-    return str
+    return chars
 end
 
 ----------------------------------------------------------------
--- GET KEY LINK
+-- GET LINK
+--
+-- Equivalent to the C#:
+-- await boost.GetLink()
 ----------------------------------------------------------------
 
-local function cacheLink()
+local function GetLink()
     if not checkConnectivity() then
         return false,
-            "Network Error! Use another executor or network."
+            "Platoboost connection failed."
     end
 
-    if cachedTime + (10 * 60) < fOsTime() then
-        local response, err =
-            safeRequest({
-                Url = host .. "/public/start",
-                Method = "POST",
+    if cachedLink ~= ""
+        and cachedTime + 600 > os.time()
+    then
+        return true, cachedLink
+    end
 
-                Body = lEncode({
-                    service = Config.ServiceId,
-                    identifier = lDigest(
-                        fGetHwid()
-                    )
+    local response, err =
+        safeRequest({
+            Url =
+                host
+                .. "/public/start",
+
+            Method = "POST",
+
+            Body =
+                lEncode({
+                    service =
+                        Config.ServiceId,
+
+                    identifier =
+                        lDigest(
+                            fGetHwid()
+                        )
                 }),
 
-                Headers = {
-                    ["Content-Type"] =
-                        "application/json"
-                }
-            })
+            Headers = {
+                ["Content-Type"] =
+                    "application/json"
+            }
+        })
 
-        if response
-            and response.StatusCode == 200
-        then
-            local decoded =
-                lDecode(response.Body)
-
-            if decoded
-                and decoded.success
-                and decoded.data
-                and decoded.data.url
-            then
-                cachedLink =
-                    decoded.data.url
-
-                cachedTime = fOsTime()
-
-                return true, cachedLink
-            end
-
-            return false,
-                decoded
-                and decoded.message
-                or "Invalid server response"
-        end
-
+    if not response then
         return false,
-            err
-            or "Server Unreachable"
+            err or "Request failed."
     end
+
+    if response.StatusCode ~= 200 then
+        return false,
+            "Platoboost HTTP "
+            .. tostring(
+                response.StatusCode
+            )
+    end
+
+    local ok, decoded =
+        pcall(
+            lDecode,
+            response.Body
+        )
+
+    if not ok
+        or type(decoded) ~= "table"
+    then
+        return false,
+            "Invalid Platoboost response."
+    end
+
+    if not decoded.success then
+        return false,
+            decoded.message
+            or "Unable to create key link."
+    end
+
+    if not decoded.data
+        or not decoded.data.url
+    then
+        return false,
+            "Platoboost did not return a link."
+    end
+
+    cachedLink =
+        decoded.data.url
+
+    cachedTime = os.time()
 
     return true, cachedLink
 end
 
 ----------------------------------------------------------------
--- REDEEM KEY
+-- VERIFY
+--
+-- Equivalent to the C#:
+-- await boost.Verify(key)
 ----------------------------------------------------------------
 
-local function redeemKey(key)
-    local nonce = generateNonce()
+local function Verify(key)
+    if type(key) ~= "string"
+        or key:gsub("%s+", "") == ""
+    then
+        return false,
+            "Enter a key."
+    end
+
+    if not checkConnectivity() then
+        return false,
+            "Platoboost connection failed."
+    end
+
+    local nonce =
+        generateNonce()
 
     local body = {
-        identifier = lDigest(
-            fGetHwid()
-        ),
+        identifier =
+            lDigest(
+                fGetHwid()
+            ),
+
         key = key
     }
 
@@ -968,13 +635,14 @@ local function redeemKey(key)
             Url =
                 host
                 .. "/public/redeem/"
-                .. fToString(
+                .. tostring(
                     Config.ServiceId
                 ),
 
             Method = "POST",
 
-            Body = lEncode(body),
+            Body =
+                lEncode(body),
 
             Headers = {
                 ["Content-Type"] =
@@ -982,67 +650,93 @@ local function redeemKey(key)
             }
         })
 
-    if response
-        and response.StatusCode == 200
-    then
-        local decoded =
-            lDecode(response.Body)
-
-        if decoded
-            and decoded.success
-            and decoded.data
-            and decoded.data.valid
-        then
-            if useNonce then
-                local expected =
-                    lDigest(
-                        "true"
-                        .. "-"
-                        .. nonce
-                        .. "-"
-                        .. Config.PlatoSecret
-                    )
-
-                if decoded.data.hash
-                    == expected
-                then
-                    if writefile then
-                        writefile(
-                            Config.KeyFileName,
-                            key
-                        )
-                    end
-
-                    return true, "Success"
-                end
-
-                return false,
-                    "Integrity Check Failed"
-            end
-
-            if writefile then
-                writefile(
-                    Config.KeyFileName,
-                    key
-                )
-            end
-
-            return true, "Success"
-        end
-
+    if not response then
         return false,
-            decoded
-            and decoded.message
-            or "Invalid Key"
+            err
+            or "Verification request failed."
     end
 
-    return false,
-        err
-        or "Server Error"
+    if response.StatusCode ~= 200 then
+        return false,
+            "Platoboost HTTP "
+            .. tostring(
+                response.StatusCode
+            )
+    end
+
+    local ok, decoded =
+        pcall(
+            lDecode,
+            response.Body
+        )
+
+    if not ok
+        or type(decoded) ~= "table"
+    then
+        return false,
+            "Invalid Platoboost response."
+    end
+
+    if not decoded.success then
+        return false,
+            decoded.message
+            or "Invalid key."
+    end
+
+    if not decoded.data
+        or decoded.data.valid ~= true
+    then
+        return false,
+            decoded.message
+            or "Invalid key."
+    end
+
+    ------------------------------------------------------------
+    -- NONCE INTEGRITY CHECK
+    ------------------------------------------------------------
+
+    if useNonce then
+        if not decoded.data.hash then
+            return false,
+                "Missing verification hash."
+        end
+
+        local expectedHash =
+            lDigest(
+                "true"
+                .. "-"
+                .. nonce
+                .. "-"
+                .. Config.PlatoSecret
+            )
+
+        if decoded.data.hash
+            ~= expectedHash
+        then
+            return false,
+                "Integrity Check Failed."
+        end
+    end
+
+    ------------------------------------------------------------
+    -- SAVE VERIFIED KEY
+    ------------------------------------------------------------
+
+    if writefile then
+        pcall(function()
+            writefile(
+                Config.KeyFileName,
+                key
+            )
+        end)
+    end
+
+    return true,
+        "Key valid."
 end
 
 ----------------------------------------------------------------
--- START MAIN SCRIPT
+-- MAIN SCRIPT
 ----------------------------------------------------------------
 
 local function StartMainScript()
@@ -1056,7 +750,10 @@ local function StartMainScript()
             "PlayerGui"
         )
 
-    -- Remove old GUI if present.
+    ------------------------------------------------------------
+    -- Remove old GUI
+    ------------------------------------------------------------
+
     local oldGui =
         pGui:FindFirstChild(
             Config.OldGuiName
@@ -1067,21 +764,38 @@ local function StartMainScript()
         task.wait(0.1)
     end
 
-    -- This flag is only used by your main script.
+    ------------------------------------------------------------
+    -- Authentication flag
+    ------------------------------------------------------------
+
     _G[Config.Secret] = true
+
+    ------------------------------------------------------------
+    -- Load main script
+    ------------------------------------------------------------
 
     local success, result =
         pcall(function()
-            return loadstring(
+            local source =
                 game:HttpGet(
                     Config.MainScriptURL
                 )
-            )()
+
+            local fn =
+                loadstring(source)
+
+            if not fn then
+                error(
+                    "loadstring failed."
+                )
+            end
+
+            return fn()
         end)
 
     if not success then
         warn(
-            "[ZOLO] Failed to load main script:",
+            "[ZOLO] Main script error:",
             result
         )
     end
@@ -1102,7 +816,12 @@ local function CreateGUI()
             "CoreGui"
         )
 
-    local targetParent = coreGui
+    local targetParent =
+        coreGui
+
+    ------------------------------------------------------------
+    -- Remove duplicate key GUI
+    ------------------------------------------------------------
 
     local existing =
         targetParent:FindFirstChild(
@@ -1112,6 +831,10 @@ local function CreateGUI()
     if existing then
         existing:Destroy()
     end
+
+    ------------------------------------------------------------
+    -- SCREEN GUI
+    ------------------------------------------------------------
 
     local ScreenGui =
         Instance.new(
@@ -1126,6 +849,10 @@ local function CreateGUI()
 
     ScreenGui.Parent =
         targetParent
+
+    ------------------------------------------------------------
+    -- MAIN FRAME
+    ------------------------------------------------------------
 
     local MainFrame =
         Instance.new(
@@ -1186,7 +913,7 @@ local function CreateGUI()
         )
 
     ------------------------------------------------------------
-    -- CLOSE
+    -- CLOSE BUTTON
     ------------------------------------------------------------
 
     local CloseBtn =
@@ -1211,7 +938,9 @@ local function CreateGUI()
             10
         )
 
-    CloseBtn.BackgroundTransparency = 1
+    CloseBtn.BackgroundTransparency =
+        1
+
     CloseBtn.Text = "X"
 
     CloseBtn.TextColor3 =
@@ -1225,6 +954,7 @@ local function CreateGUI()
         Enum.Font.GothamBold
 
     CloseBtn.TextSize = 18
+
     CloseBtn.ZIndex = 10
 
     CloseBtn.MouseButton1Click:Connect(
@@ -1308,7 +1038,8 @@ local function CreateGUI()
             50
         )
 
-    PromoText.BackgroundTransparency = 1
+    PromoText.BackgroundTransparency =
+        1
 
     PromoText.Text =
         Config.HubDescription
@@ -1327,7 +1058,7 @@ local function CreateGUI()
     PromoText.TextWrapped = true
 
     ------------------------------------------------------------
-    -- RAINBOW BORDER
+    -- RAINBOW STROKE
     ------------------------------------------------------------
 
     local function AddRainbowStroke(parent)
@@ -1361,7 +1092,47 @@ local function CreateGUI()
         )
     end
 
-    local currentYOffset = 105
+    local currentYOffset =
+        105
+
+    ------------------------------------------------------------
+    -- STATUS
+    ------------------------------------------------------------
+
+    local Status =
+        Instance.new(
+            "TextLabel",
+            MainFrame
+        )
+
+    Status.Name =
+        "StatusLabel"
+
+    Status.Size =
+        UDim2.new(
+            1,
+            0,
+            0,
+            30
+        )
+
+    Status.BackgroundTransparency =
+        1
+
+    Status.Text =
+        "Waiting for input..."
+
+    Status.TextColor3 =
+        Color3.fromRGB(
+            150,
+            150,
+            150
+        )
+
+    Status.Font =
+        Enum.Font.Gotham
+
+    Status.TextSize = 12
 
     ------------------------------------------------------------
     -- DISCORD
@@ -1391,7 +1162,7 @@ local function CreateGUI()
             )
 
         DiscordBtn.Text =
-            "      JOIN DISCORD"
+            "JOIN DISCORD"
 
         DiscordBtn.Font =
             Enum.Font.GothamBold
@@ -1471,7 +1242,7 @@ local function CreateGUI()
             )
 
         InstaBtn.Text =
-            "      FOLLOW INSTAGRAM"
+            "FOLLOW INSTAGRAM"
 
         InstaBtn.Font =
             Enum.Font.GothamBold
@@ -1551,7 +1322,7 @@ local function CreateGUI()
             )
 
         YTBtn.Text =
-            "      SUBSCRIBE YOUTUBE"
+            "SUBSCRIBE YOUTUBE"
 
         YTBtn.Font =
             Enum.Font.GothamBold
@@ -1634,6 +1405,9 @@ local function CreateGUI()
 
     KeyInput.Text = ""
 
+    KeyInput.ClearTextOnFocus =
+        false
+
     KeyInput.Font =
         Enum.Font.GothamSemibold
 
@@ -1659,7 +1433,7 @@ local function CreateGUI()
     )
 
     ------------------------------------------------------------
-    -- VERIFY
+    -- VERIFY BUTTON
     ------------------------------------------------------------
 
     local VerifyBtn =
@@ -1684,7 +1458,8 @@ local function CreateGUI()
             currentYOffset + 65
         )
 
-    VerifyBtn.Text = "VERIFY"
+    VerifyBtn.Text =
+        "VERIFY"
 
     VerifyBtn.Font =
         Enum.Font.GothamBold
@@ -1711,7 +1486,7 @@ local function CreateGUI()
     )
 
     ------------------------------------------------------------
-    -- GET KEY
+    -- GET KEY BUTTON
     ------------------------------------------------------------
 
     local GetKeyBtn =
@@ -1736,7 +1511,8 @@ local function CreateGUI()
             currentYOffset + 65
         )
 
-    GetKeyBtn.Text = "GET KEY"
+    GetKeyBtn.Text =
+        "GET KEY"
 
     GetKeyBtn.Font =
         Enum.Font.GothamBold
@@ -1763,24 +1539,15 @@ local function CreateGUI()
     )
 
     ------------------------------------------------------------
-    -- STATUS
+    -- RESIZE
     ------------------------------------------------------------
 
-    local Status =
-        Instance.new(
-            "TextLabel",
-            MainFrame
-        )
-
-    Status.Name =
-        "StatusLabel"
-
-    Status.Size =
+    MainFrame.Size =
         UDim2.new(
-            1,
             0,
+            340,
             0,
-            30
+            currentYOffset + 160
         )
 
     Status.Position =
@@ -1791,33 +1558,8 @@ local function CreateGUI()
             currentYOffset + 115
         )
 
-    Status.BackgroundTransparency = 1
-
-    Status.Text =
-        "Waiting for input..."
-
-    Status.TextColor3 =
-        Color3.fromRGB(
-            150,
-            150,
-            150
-        )
-
-    Status.Font =
-        Enum.Font.Gotham
-
-    Status.TextSize = 12
-
-    MainFrame.Size =
-        UDim2.new(
-            0,
-            340,
-            0,
-            currentYOffset + 160
-        )
-
     ------------------------------------------------------------
-    -- VERIFY BUTTON
+    -- VERIFY
     ------------------------------------------------------------
 
     VerifyBtn.MouseButton1Click:Connect(
@@ -1825,7 +1567,9 @@ local function CreateGUI()
             local key =
                 KeyInput.Text
 
-            if key == "" then
+            if key == ""
+                or key:gsub("%s+", "") == ""
+            then
                 Status.Text =
                     "Enter a key!"
 
@@ -1839,8 +1583,11 @@ local function CreateGUI()
                 return
             end
 
-            VerifyBtn.Active = false
-            GetKeyBtn.Active = false
+            VerifyBtn.Active =
+                false
+
+            GetKeyBtn.Active =
+                false
 
             Status.Text =
                 "Verifying..."
@@ -1852,8 +1599,8 @@ local function CreateGUI()
                     150
                 )
 
-            local success, msg =
-                redeemKey(key)
+            local success, message =
+                Verify(key)
 
             if success then
                 Status.Text =
@@ -1868,12 +1615,14 @@ local function CreateGUI()
 
                 task.wait(0.5)
 
-                ScreenGui:Destroy()
+                if ScreenGui.Parent then
+                    ScreenGui:Destroy()
+                end
 
                 StartMainScript()
             else
                 Status.Text =
-                    tostring(msg)
+                    tostring(message)
 
                 Status.TextColor3 =
                     Color3.fromRGB(
@@ -1882,18 +1631,24 @@ local function CreateGUI()
                         50
                     )
 
-                VerifyBtn.Active = true
-                GetKeyBtn.Active = true
+                VerifyBtn.Active =
+                    true
+
+                GetKeyBtn.Active =
+                    true
             end
         end
     )
 
     ------------------------------------------------------------
-    -- GET KEY BUTTON
+    -- GET KEY
     ------------------------------------------------------------
 
     GetKeyBtn.MouseButton1Click:Connect(
         function()
+            GetKeyBtn.Active =
+                false
+
             Status.Text =
                 "Getting Link..."
 
@@ -1905,7 +1660,7 @@ local function CreateGUI()
                 )
 
             local success, link =
-                cacheLink()
+                GetLink()
 
             if success then
                 fSetClipboard(link)
@@ -1930,11 +1685,18 @@ local function CreateGUI()
                         100
                     )
             end
+
+            GetKeyBtn.Active =
+                true
         end
     )
 
     ------------------------------------------------------------
-    -- SAVED KEY / AUTO LOGIN
+    -- SAVED KEY
+    --
+    -- IMPORTANT:
+    -- A saved key is NOT trusted locally.
+    -- It must pass Platoboost Verify() again.
     ------------------------------------------------------------
 
     if isfile
@@ -1953,12 +1715,16 @@ local function CreateGUI()
             Status.Text =
                 "Found saved key, verifying..."
 
+            VerifyBtn.Active =
+                false
+
+            GetKeyBtn.Active =
+                false
+
             task.spawn(
                 function()
-                    local success, msg =
-                        redeemKey(
-                            savedKey
-                        )
+                    local success, message =
+                        Verify(savedKey)
 
                     if success then
                         Status.Text =
@@ -1988,6 +1754,12 @@ local function CreateGUI()
                                 150,
                                 0
                             )
+
+                        VerifyBtn.Active =
+                            true
+
+                        GetKeyBtn.Active =
+                            true
                     end
                 end
             )
@@ -2012,13 +1784,15 @@ local pGui =
 ----------------------------------------------------------------
 -- IMPORTANT FIX
 --
--- BEFORE:
--- If KARINDERYA existed, the script called StartMainScript()
--- and completely skipped the key system.
+-- DO NOT DO THIS:
 --
--- NOW:
--- If KARINDERYA exists, we simply stop here.
--- It does NOT authenticate or load the main script.
+-- if pGui:FindFirstChild("KARINDERYA") then
+--     StartMainScript()
+--     return
+-- end
+--
+-- An existing KARINDERYA must NEVER itself authenticate
+-- the user.
 ----------------------------------------------------------------
 
 if pGui:FindFirstChild(
