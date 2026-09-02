@@ -1,436 +1,1679 @@
-	--[[
-		================================================================
-		[ SCRIPT INFORMATION ]
-		Project: Custom Script
-		Author: OYB
-		YouTube: https://www.youtube.com/channel/UCAlXXV1Hbvf7WbfXARuVtiQ
-		
-		[ TERMS AND CONDITIONS ]
-		- You ARE allowed to use and modify this script for your own games.
-		- You ARE NOT allowed to re-upload, redistribute, or claim 
-		  ownership of this script.
-		- Removing or altering these credits is strictly prohibited.
-		
-		Copyright (c) 2026 OYB. All rights reserved.
-		================================================================
-	]]
-	local Config = {
-		-- [1] PlatoBoost Settings
-		ServiceId       = 30834, -- Your PlatoBoost Service ID
-		PlatoSecret     = "37b9d1d0-5c79-4d26-bc60-42f94917d279", -- Your PlatoBoost Secret Key
+--[[
+    ================================================================
+    [ SCRIPT INFORMATION ]
+    Project: Custom Script
+    Author: OYB
+    YouTube: https://www.youtube.com/channel/UCAlXXV1Hbvf7WbfXARuVtiQ
 
-		-- [2] Anti-Bypass / Global Secret Variable
-		Secret          = "zolopogi123", -- This makes the script ONLY run from the key script. Even if they copy the original obfuscated script to bypass the key, they won't be able to!
-		
-		-- [3] Scripts & Links
-		MainScriptURL   = "https://raw.githubusercontent.com/Zolorblx/Keysystem/refs/heads/main/ZoloScript.lua", -- The raw URL of your main script
-		
-		-- [4] Social Media Settings (Set to true to show, false to hide)
-		ShowDiscord     = false,
-		DiscordURL      = "https://discord.gg/kT55J724BK",
-		
-		ShowInstagram   = false,
-		InstagramURL    = "https://www.instagram.com/oyb0i/",
-		
-		ShowYoutube     = false,
-		YoutubeURL      = "https://www.youtube.com/channel/UCAlXXV1Hbvf7WbfXARuVtiQ",
+    [ TERMS AND CONDITIONS ]
+    - You ARE allowed to use and modify this script for your own games.
+    - You ARE NOT allowed to re-upload, redistribute, or claim
+      ownership of this script.
+    ================================================================
+]]
 
-		-- [5] File System
-		KeyFileName     = "Mykey.txt", -- The name of the file where the valid key will be saved for auto-login
+local Config = {
+    -- [1] PlatoBoost Settings
+    ServiceId   = 30834,
+    PlatoSecret = "REPLACE_WITH_YOUR_ROTATED_PLATO_SECRET",
 
-		-- [6] GUI Management
-		OldGuiName      = "KARINDERYA", -- Name of the old GUI to destroy if it's already open
-		MainGuiName     = "KARINDERYA", -- Name of the main script's GUI to check if it's already executing
+    -- [2] Anti-Bypass / Global Secret Variable
+    Secret = "REPLACE_WITH_YOUR_SECRET",
 
-		-- [7] Hub Information & UI Text
-		HubName         = "ZOLO", -- The main title shown at the top of the GUI
-		HubDescription  = "5$ for lifetime?" -- The text shown below the title
-	}
+    -- [3] Scripts & Links
+    MainScriptURL =
+        "https://raw.githubusercontent.com/Zolorblx/Keysystem/refs/heads/main/ZoloScript.lua",
 
-	-------------------------------------------------------------------------------
-	--! LIBRARIES (JSON & CRYPTOGRAPHY) - DO NOT MODIFY
-	-------------------------------------------------------------------------------
-	local a=2^32;local b=a-1;local function c(d,e)local f,g=0,1;while d~=0 or e~=0 do local h,i=d%2,e%2;local j=(h+i)%2;f=f+j*g;d=math.floor(d/2)e=math.floor(e/2)g=g*2 end;return f%a end;local function k(d,e,l,...)local m;if e then d=d%a;e=e%a;m=c(d,e)if l then m=k(m,l,...)end;return m elseif d then return d%a else return 0 end end;local function n(d,e,l,...)local m;if e then d=d%a;e=e%a;m=(d+e-c(d,e))/2;if l then m=n(m,l,...)end;return m elseif d then return d%a else return b end end;local function o(p)return b-p end;local function q(d,r)if r<0 then return lshift(d,-r)end;return math.floor(d%2^32/2^r)end;local function s(p,r)if r>31 or r<-31 then return 0 end;return q(p%a,r)end;local function lshift(d,r)if r<0 then return s(d,-r)end;return d*2^r%2^32 end;local function t(p,r)p=p%a;r=r%32;local u=n(p,2^r-1)return s(p,r)+lshift(u,32-r)end;local v={0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2}local function w(x)return string.gsub(x,".",function(l)return string.format("%02x",string.byte(l))end)end;local function y(z,A)local x=""for B=1,A do local C=z%256;x=string.char(C)..x;z=(z-C)/256 end;return x end;local function D(x,B)local A=0;for B=B,B+3 do A=A*256+string.byte(x,B)end;return A end;local function E(F,G)local H=64-(G+9)%64;G=y(8*G,8)F=F.."\128"..string.rep("\0",H)..G;assert(#F%64==0)return F end;local function I(J)J[1]=0x6a09e667;J[2]=0xbb67ae85;J[3]=0x3c6ef372;J[4]=0xa54ff53a;J[5]=0x510e527f;J[6]=0x9b05688c;J[7]=0x1f83d9ab;J[8]=0x5be0cd19;return J end;local function K(F,B,J)local L={}for M=1,16 do L[M]=D(F,B+(M-1)*4)end;for M=17,64 do local N=L[M-15]local O=k(t(N,7),t(N,18),s(N,3))N=L[M-2]L[M]=(L[M-16]+O+L[M-7]+k(t(N,17),t(N,19),s(N,10)))%a end;local d,e,l,P,Q,R,S,T=J[1],J[2],J[3],J[4],J[5],J[6],J[7],J[8]for B=1,64 do local O=k(t(d,2),t(d,13),t(d,22))local U=k(n(d,e),n(d,l),n(e,l))local V=(O+U)%a;local W=k(t(Q,6),t(Q,11),t(Q,25))local X=k(n(Q,R),n(o(Q),S))local Y=(T+W+X+v[B]+L[B])%a;T=S;S=R;R=Q;Q=(P+Y)%a;P=l;l=e;e=d;d=(Y+V)%a end;J[1]=(J[1]+d)%a;J[2]=(J[2]+e)%a;J[3]=(J[3]+l)%a;J[4]=(J[4]+P)%a;J[5]=(J[5]+Q)%a;J[6]=(J[6]+R)%a;J[7]=(J[7]+S)%a;J[8]=(J[8]+T)%a end;local function Z(F)F=E(F,#F)local J=I({})for B=1,#F,64 do K(F,B,J)end;return w(y(J[1],4)..y(J[2],4)..y(J[3],4)..y(J[4],4)..y(J[5],4)..y(J[6],4)..y(J[7],4)..y(J[8],4))end;local e;local l={["\\"]="\\",["\""]="\"",["\b"]="b",["\f"]="f",["\n"]="n",["\r"]="r",["\t"]="t"}local P={["/"]="/"}for Q,R in pairs(l)do P[R]=Q end;local S=function(T)return"\\"..(l[T]or string.format("u%04x",T:byte()))end;local B=function(M)return"null"end;local v=function(M,z)local _={}z=z or{}if z[M]then error("circular reference")end;z[M]=true;if rawget(M,1)~=nil or next(M)==nil then local A=0;for Q in pairs(M)do if type(Q)~="number"then error("invalid table: mixed or invalid key types")end;A=A+1 end;if A~=#M then error("invalid table: sparse array")end;for a0,R in ipairs(M)do table.insert(_,e(R,z))end;z[M]=nil;return"["..table.concat(_,",").."]"else for Q,R in pairs(M)do if type(Q)~="string"then error("invalid table: mixed or invalid key types")end;table.insert(_,e(Q,z)..":"..e(R,z))end;z[M]=nil;return"{"..table.concat(_,",").."}"end end;local g=function(M)return'"'..M:gsub('[%z\1-\31\\\"]',S)..'"'end;local a1=function(M)if M~=M or M<=-math.huge or M>=math.huge then error("unexpected number value '"..tostring(M).."'")end;return string.format("%.14g",M)end;local j={["nil"]=B,["table"]=v,["string"]=g,["number"]=a1,["boolean"]=tostring}e=function(M,z)local x=type(M)local a2=j[x]if a2 then return a2(M,z)end;error("unexpected type '"..x.."'")end;local a3=function(M)return e(M)end;local a4;local N=function(...)local _={}for a0=1,select("#",...)do _[select(a0,...)]=true end;return _ end;local L=N(" ","\t","\r","\n")local p=N(" ","\t","\r","\n","]","}",",")local a5=N("\\","/",'"',"b","f","n","r","t","u")local m=N("true","false","null")local a6={["true"]=true,["false"]=false,["null"]=nil}local a7=function(a8,a9,aa,ab)for a0=a9,#a8 do if aa[a8:sub(a0,a0)]~=ab then return a0 end end;return#a8+1 end;local ac=function(a8,a9,J)local ad=1;local ae=1;for a0=1,a9-1 do ae=ae+1;if a8:sub(a0,a0)=="\n"then ad=ad+1;ae=1 end end;error(string.format("%s at line %d col %d",J,ad,ae))end;local af=function(A)local a2=math.floor;if A<=0x7f then return string.char(A)elseif A<=0x7ff then return string.char(a2(A/64)+192,A%64+128)elseif A<=0xffff then return string.char(a2(A/4096)+224,a2(A%4096/64)+128,A%64+128)elseif A<=0x10ffff then return string.char(a2(A/262144)+240,a2(A%262144/4096)+128,a2(A%4096/64)+128,A%64+128)end;error(string.format("invalid unicode codepoint '%x'",A))end;local ag=function(ah)local ai=tonumber(ah:sub(1,4),16)local aj=tonumber(ah:sub(7,10),16)if aj then return af((ai-0xd800)*0x400+aj-0xdc00+0x10000)else return af(ai)end end;local ak=function(a8,a0)local _=""local al=a0+1;local Q=al;while al<=#a8 do local am=a8:byte(al)if am<32 then ac(a8,al,"control character in string")elseif am==92 then _=_..a8:sub(Q,al-1)al=al+1;local T=a8:sub(al,al)if T=="u"then local an=a8:match("^[dD][89aAbB]%x%x\\u%x%x%x%x",al+1)or a8:match("^%x%x%x%x",al+1)or ac(a8,al-1,"invalid unicode escape in string")_=_..ag(an)al=al+#an else if not a5[T]then ac(a8,al-1,"invalid escape char '"..T.."' in string")end;_=_..P[T]end;Q=al+1 elseif am==34 then _=_..a8:sub(Q,al-1)return _,al+1 end;al=al+1 end;ac(a8,a0,"expected closing quote for string")end;local ao=function(a8,a0)local am=a7(a8,a0,p)local ah=a8:sub(a0,am-1)local A=tonumber(ah)if not A then ac(a8,a0,"invalid number '"..ah.."'")end;return A,am end;local ap=function(a8,a0)local am=a7(a8,a0,p)local aq=a8:sub(a0,am-1)if not m[aq]then ac(a8,a0,"invalid literal '"..aq.."'")end;return a6[aq],am end;local ar=function(a8,a0)local _={}local A=1;a0=a0+1;while 1 do local am;a0=a7(a8,a0,L,true)if a8:sub(a0,a0)=="]"then a0=a0+1;break end;am,a0=a4(a8,a0)_[A]=am;A=A+1;a0=a7(a8,a0,L,true)local as=a8:sub(a0,a0)a0=a0+1;if as=="]"then break end;if as~=","then ac(a8,a0,"expected ']' or ','")end end;return _,a0 end;local at=function(a8,a0)local _={}a0=a0+1;while 1 do local au,M;a0=a7(a8,a0,L,true)if a8:sub(a0,a0)=="}"then a0=a0+1;break end;if a8:sub(a0,a0)~='"'then ac(a8,a0,"expected string for key")end;au,a0=a4(a8,a0)a0=a7(a8,a0,L,true)if a8:sub(a0,a0)~=":"then ac(a8,a0,"expected ':' after key")end;a0=a7(a8,a0+1,L,true)M,a0=a4(a8,a0)_[au]=M;a0=a7(a8,a0,L,true)local as=a8:sub(a0,a0)a0=a0+1;if as=="}"then break end;if as~=","then ac(a8,a0,"expected '}' or ','")end end;return _,a0 end;local av={['"']=ak,["0"]=ao,["1"]=ao,["2"]=ao,["3"]=ao,["4"]=ao,["5"]=ao,["6"]=ao,["7"]=ao,["8"]=ao,["9"]=ao,["-"]=ao,["t"]=ap,["f"]=ap,["n"]=ap,["["]=ar,["{"]=at}a4=function(a8,a9)local as=a8:sub(a9,a9)local a2=av[as]if a2 then return a2(a8,a9)end;ac(a8,a9,"unexpected character '"..as.."'")end;local aw=function(a8)if type(a8)~="string"then error("expected argument of type string, got "..type(a8))end;local _,a9=a4(a8,a7(a8,1,L,true))a9=a7(a8,a9,L,true)if a9<=#a8 then ac(a8,a9,"trailing garbage")end;return _ end;
-	local lEncode, lDecode, lDigest = a3, aw, Z;
+    -- [4] Social Media
+    ShowDiscord   = false,
+    DiscordURL    = "https://discord.gg/kT55J724BK",
 
-	-------------------------------------------------------------------------------
-	--! CORE FUNCTIONS (REQUESTS & VERIFICATION)
-	-------------------------------------------------------------------------------
+    ShowInstagram = false,
+    InstagramURL  = "https://www.instagram.com/oyb0i/",
 
-	local useNonce = true 
+    ShowYoutube   = false,
+    YoutubeURL    = "https://www.youtube.com/channel/UCAlXXV1Hbvf7WbfXARuVtiQ",
 
-	local function safeRequest(options)
-		local req = request or http_request or syn_request or (http and http.request )
-		if not req then return nil, "HTTP requests not supported" end
-		local success, response = pcall(function() return req(options) end)
-		if success and type(response) == "table" then 
-			return response 
-		else 
-		   
-			return nil, "Connection Error: " .. tostring(response or "Unknown") 
-		end
-	end
+    -- [5] File System
+    KeyFileName = "Mykey.txt",
 
-	local fSetClipboard = setclipboard or toclipboard or function() end
-	local fStringChar, fToString, fOsTime, fMathRandom, fMathFloor = string.char, tostring, os.time, math.random, math.floor
-	local fGetHwid = gethwid or function() return game:GetService("RbxAnalyticsService"):GetClientId() end
+    -- [6] GUI
+    OldGuiName  = "KARINDERYA",
+    MainGuiName = "KARINDERYA",
 
-	local cachedLink, cachedTime = "", 0
-	local host = "https://api.platoboost.com"
+    -- [7] Hub Information
+    HubName        = "ZOLO",
+    HubDescription = "5$ for lifetime?"
+}
 
-	local function checkConnectivity( )
-		local response, err = safeRequest({Url = host .. "/public/connectivity", Method = "GET"})
-		if not response or (response.StatusCode ~= 200 and response.StatusCode ~= 429) then
-			host = "https://api.platoboost.net"
-			local fallbackResponse, fallbackErr = safeRequest({Url = host .. "/public/connectivity", Method = "GET"})
-			if not fallbackResponse then
-				return false 
-			end
-		end
-		return true
-	end
+----------------------------------------------------------------
+-- LIBRARIES
+----------------------------------------------------------------
 
-	local function generateNonce()
-		local str = ""
-		for _ = 1, 16 do str = str .. fStringChar(fMathFloor(fMathRandom() * (122 - 97 + 1)) + 97) end
-		return str
-	end
+local a = 2^32
+local b = a - 1
 
-	local function cacheLink()
-		local isConnected = checkConnectivity()
-		if not isConnected then
-			return false, "Delta/Network Error! Use VPN or change Executor."
-		end
-		
-		if cachedTime + (10*60) < fOsTime() then
-			local response, err = safeRequest({
-				Url = host .. "/public/start",
-				Method = "POST",
-				Body = lEncode({service = Config.ServiceId, identifier = lDigest(fGetHwid())}),
-				Headers = {["Content-Type"] = "application/json"}
-			})
-			if response and response.StatusCode == 200 then
-				local decoded = lDecode(response.Body)
-				if decoded.success then
-					cachedLink = decoded.data.url
-					cachedTime = fOsTime()
-					return true, cachedLink
-				end
-			end
-			return false, err or "Server Unreachable"
-		end
-		return true, cachedLink
-	end
+local function c(d, e)
+    local f, g = 0, 1
 
-	local function redeemKey(key)
-		local nonce = generateNonce()
-		local body = {identifier = lDigest(fGetHwid()), key = key}
-		if useNonce then body.nonce = nonce end
-		
-		local response, err = safeRequest({
-			Url = host .. "/public/redeem/" .. fToString(Config.ServiceId),
-			Method = "POST",
-			Body = lEncode(body),
-			Headers = {["Content-Type"] = "application/json"}
-		})
-		
-		if response and response.StatusCode == 200 then
-			local decoded = lDecode(response.Body)
-			if decoded.success and decoded.data.valid then
-				if useNonce then
-					if decoded.data.hash == lDigest("true" .. "-" .. nonce .. "-" .. Config.PlatoSecret) then 
-						if writefile then writefile(Config.KeyFileName, key) end
-						return true, "Success" 
-					end
-					return false, "Integrity Check Failed"
-				end
-				if writefile then writefile(Config.KeyFileName, key) end
-				return true, "Success"
-			end
-			return false, decoded.message or "Invalid Key"
-		end
-		return false, err or "Server Error"
-	end
+    while d ~= 0 or e ~= 0 do
+        local h, i = d % 2, e % 2
+        local j = (h + i) % 2
 
-	-------------------------------------------------------------------------------
-	--! GUI & MAIN SCRIPT EXECUTION
-	-------------------------------------------------------------------------------
+        f = f + j * g
+        d = math.floor(d / 2)
+        e = math.floor(e / 2)
+        g = g * 2
+    end
 
-	local function StartMainScript()
-		local player = game:GetService("Players").LocalPlayer
-		local pGui = player:WaitForChild("PlayerGui")
-		
-		if pGui:FindFirstChild(Config.OldGuiName) then 
-			pGui[Config.OldGuiName]:Destroy() 
-			task.wait(0.1)
-		end
-		
-		_G[Config.Secret] = true 
-		
-		loadstring(game:HttpGet(Config.MainScriptURL))()
-	end
+    return f % a
+end
 
-	local function CreateGUI()
-		local player = game:GetService("Players").LocalPlayer
-		local coreGui = game:GetService("CoreGui")
-		local targetParent = pcall(function() return coreGui end) and coreGui or player:WaitForChild("PlayerGui")
-		
-		if targetParent:FindFirstChild("OYB_KeySystem") then targetParent.OYB_KeySystem:Destroy() end
+local function k(d, e, l, ...)
+    local m
 
-		local ScreenGui = Instance.new("ScreenGui", targetParent)
-		ScreenGui.Name = "OYB_KeySystem"
-		ScreenGui.ResetOnSpawn = false
+    if e then
+        d = d % a
+        e = e % a
+        m = c(d, e)
 
-		local MainFrame = Instance.new("Frame", ScreenGui)
-		MainFrame.Size = UDim2.new(0, 340, 0, 420)
-		MainFrame.Position = UDim2.new(0.5, -170, 0.5, -210)
-		MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-		MainFrame.Active = true;
-		MainFrame.Draggable = true
-		Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 15)
-		
-		local mainStroke = Instance.new("UIStroke", MainFrame)
-		mainStroke.Thickness = 2;
-		mainStroke.Color = Color3.fromRGB(40, 40, 40)
+        if l then
+            m = k(m, l, ...)
+        end
 
-		local CloseBtn = Instance.new("TextButton", MainFrame)
-		CloseBtn.Size = UDim2.new(0, 30, 0, 30)
-		CloseBtn.Position = UDim2.new(1, -35, 0, 10)
-		CloseBtn.BackgroundTransparency = 1
-		CloseBtn.Text = "X"
-		CloseBtn.TextColor3 = Color3.fromRGB(255, 50, 50)
-		CloseBtn.Font = Enum.Font.GothamBold
-		CloseBtn.TextSize = 18
-		CloseBtn.ZIndex = 10
-		CloseBtn.MouseButton1Click:Connect(function() ScreenGui:Destroy() end)
+        return m
+    elseif d then
+        return d % a
+    else
+        return 0
+    end
+end
 
-		local Title = Instance.new("TextLabel", MainFrame)
-		Title.Size = UDim2.new(1, 0, 0, 50)
-		Title.Text = Config.HubName
-		Title.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-		Title.TextColor3 = Color3.fromRGB(0, 170, 255)
-		Title.Font = Enum.Font.GothamBold;
-		Title.TextSize = 16
-		Instance.new("UICorner", Title).CornerRadius = UDim.new(0, 15)
+local function n(d, e, l, ...)
+    local m
 
-		local PromoText = Instance.new("TextLabel", MainFrame)
-		PromoText.Size = UDim2.new(0.9, 0, 0, 50)
-		PromoText.Position = UDim2.new(0.05, 0, 0, 50)
-		PromoText.BackgroundTransparency = 1
-		PromoText.Text = Config.HubDescription
-		PromoText.TextColor3 = Color3.fromRGB(0, 170, 255)
-		PromoText.Font = Enum.Font.GothamBold;
-		PromoText.TextSize = 14
-		PromoText.TextWrapped = true
+    if e then
+        d = d % a
+        e = e % a
+        m = (d + e - c(d, e)) / 2
 
-		local function AddRainbowStroke(parent)
-			local stroke = Instance.new("UIStroke", parent)
-			stroke.Thickness = 2
-			stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-			task.spawn(function()
-				while task.wait() do
-					local hue = tick() % 5 / 5
-					stroke.Color = Color3.fromHSV(hue, 1, 1)
-				end
-			end)
-		end
+        if l then
+            m = n(m, l, ...)
+        end
 
-		local currentYOffset = 105
+        return m
+    elseif d then
+        return d % a
+    else
+        return b
+    end
+end
 
-		if Config.ShowDiscord then
-			local DiscordBtn = Instance.new("TextButton", MainFrame)
-			DiscordBtn.Size = UDim2.new(0.85, 0, 0, 35)
-			DiscordBtn.Position = UDim2.new(0.075, 0, 0, currentYOffset)
-			DiscordBtn.Text = "      JOIN DISCORD"
-			DiscordBtn.Font = "GothamBold";
-			DiscordBtn.TextSize = 14
-			DiscordBtn.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
-			DiscordBtn.TextColor3 = Color3.new(1, 1, 1)
-			Instance.new("UICorner", DiscordBtn)
-			AddRainbowStroke(DiscordBtn)
+local function o(p)
+    return b - p
+end
 
-			local DiscordIcon = Instance.new("ImageLabel", DiscordBtn)
-			DiscordIcon.Size = UDim2.new(0, 20, 0, 20)
-			DiscordIcon.Position = UDim2.new(0.1, 0, 0.5, -10)
-			DiscordIcon.BackgroundTransparency = 1
-			DiscordIcon.Image = "rbxassetid://18505728201"
-			
-			DiscordBtn.MouseButton1Click:Connect(function()
-				fSetClipboard(Config.DiscordURL)
-				local Status = MainFrame:FindFirstChild("StatusLabel")
-				if Status then 
-					Status.Text = "Discord Link Copied!"
-					Status.TextColor3 = Color3.fromRGB(88, 101, 242)
-				end
-				local inviteCode = string.match(Config.DiscordURL, "discord%.gg/([%w-]+)")
-				if syn and syn.request and inviteCode then
-					syn.request({Url = "http://localhost:1111/discord?invite=" .. inviteCode, Method = "GET"})
-				end
-			end)
-			
-			currentYOffset = currentYOffset + 45
-		end
+local function q(d, r)
+    if r < 0 then
+        return lshift(d, -r)
+    end
 
-		if Config.ShowInstagram then
-			local InstaBtn = Instance.new("TextButton", MainFrame)
-			InstaBtn.Size = UDim2.new(0.85, 0, 0, 35)
-			InstaBtn.Position = UDim2.new(0.075, 0, 0, currentYOffset)
-			InstaBtn.Text = "      FOLLOW INSTAGRAM"
-			InstaBtn.Font = "GothamBold";
-			InstaBtn.TextSize = 14
-			InstaBtn.BackgroundColor3 = Color3.fromRGB(225, 48, 108)
-			InstaBtn.TextColor3 = Color3.new(1, 1, 1)
-			Instance.new("UICorner", InstaBtn)
-			AddRainbowStroke(InstaBtn)
+    return math.floor(d % 2^32 / 2^r)
+end
 
-			local InstaIcon = Instance.new("ImageLabel", InstaBtn)
-			InstaIcon.Size = UDim2.new(0, 20, 0, 20)
-			InstaIcon.Position = UDim2.new(0.1, 0, 0.5, -10)
-			InstaIcon.BackgroundTransparency = 1
-			InstaIcon.Image = "rbxassetid://18355586382"
-			
-			InstaBtn.MouseButton1Click:Connect(function()
-				fSetClipboard(Config.InstagramURL)
-				local Status = MainFrame:FindFirstChild("StatusLabel")
-				if Status then 
-					Status.Text = "Instagram Link Copied!"
-					Status.TextColor3 = Color3.fromRGB(225, 48, 108)
-				end
-			end)
-			
-			currentYOffset = currentYOffset + 45
-		end
-		
-		if Config.ShowYoutube then
-			local YTBtn = Instance.new("TextButton", MainFrame)
-			YTBtn.Size = UDim2.new(0.85, 0, 0, 35)
-			YTBtn.Position = UDim2.new(0.075, 0, 0, currentYOffset)
-			YTBtn.Text = "      SUBSCRIBE YOUTUBE"
-			YTBtn.Font = "GothamBold";
-			YTBtn.TextSize = 14
-			YTBtn.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-			YTBtn.TextColor3 = Color3.new(1, 1, 1)
-			Instance.new("UICorner", YTBtn)
-			AddRainbowStroke(YTBtn)
+local function s(p, r)
+    if r > 31 or r < -31 then
+        return 0
+    end
 
-			local YTIcon = Instance.new("ImageLabel", YTBtn)
-			YTIcon.Size = UDim2.new(0, 20, 0, 20)
-			YTIcon.Position = UDim2.new(0.1, 0, 0.5, -10)
-			YTIcon.BackgroundTransparency = 1
-			YTIcon.Image = "rbxassetid://82532989017804"
-			
-			YTBtn.MouseButton1Click:Connect(function()
-				fSetClipboard(Config.YoutubeURL)
-				local Status = MainFrame:FindFirstChild("StatusLabel")
-				if Status then
-					Status.Text = "YouTube Link Copied!"
-					Status.TextColor3 = Color3.fromRGB(255, 0, 0)
-				end
-			end)
-			
-			currentYOffset = currentYOffset + 45
-		end
+    return q(p % a, r)
+end
 
-		local KeyInput = Instance.new("TextBox", MainFrame)
-		KeyInput.Size = UDim2.new(0.85, 0, 0, 40)
-		KeyInput.Position = UDim2.new(0.075, 0, 0, currentYOffset + 15)
-		KeyInput.PlaceholderText = "Enter Key..."
-		KeyInput.Text = ""
-		KeyInput.Font = Enum.Font.GothamSemibold;
-		KeyInput.TextSize = 14
-		KeyInput.BackgroundColor3 = Color3.fromRGB(25, 25, 25);
-		KeyInput.TextColor3 = Color3.new(1, 1, 1)
-		Instance.new("UICorner", KeyInput)
+function lshift(d, r)
+    if r < 0 then
+        return s(d, -r)
+    end
 
-		local VerifyBtn = Instance.new("TextButton", MainFrame)
-		VerifyBtn.Size = UDim2.new(0.4, 0, 0, 40)
-		VerifyBtn.Position = UDim2.new(0.075, 0, 0, currentYOffset + 65)
-		VerifyBtn.Text = "VERIFY"
-		VerifyBtn.Font = "GothamBold";
-		VerifyBtn.TextSize = 14
-		VerifyBtn.BackgroundColor3 = Color3.fromRGB(0, 120, 255);
-		VerifyBtn.TextColor3 = Color3.new(1, 1, 1)
-		Instance.new("UICorner", VerifyBtn)
+    return d * 2^r % 2^32
+end
 
-		local GetKeyBtn = Instance.new("TextButton", MainFrame)
-		GetKeyBtn.Size = UDim2.new(0.4, 0, 0, 40)
-		GetKeyBtn.Position = UDim2.new(0.525, 0, 0, currentYOffset + 65)
-		GetKeyBtn.Text = "GET KEY"
-		GetKeyBtn.Font = "GothamBold";
-		GetKeyBtn.TextSize = 14
-		GetKeyBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35);
-		GetKeyBtn.TextColor3 = Color3.new(1, 1, 1)
-		Instance.new("UICorner", GetKeyBtn)
+local function t(p, r)
+    p = p % a
+    r = r % 32
 
-		local Status = Instance.new("TextLabel", MainFrame)
-		Status.Name = "StatusLabel"
-		Status.Size = UDim2.new(1, 0, 0, 30)
-		Status.Position = UDim2.new(0, 0, 0, currentYOffset + 115)
-		Status.BackgroundTransparency = 1
-		Status.Text = "Waiting for input..."
-		Status.TextColor3 = Color3.fromRGB(150, 150, 150)
-		Status.Font = Enum.Font.Gotham;
-		Status.TextSize = 12
-		
-		MainFrame.Size = UDim2.new(0, 340, 0, currentYOffset + 160)
+    local u = n(p, 2^r - 1)
 
-		VerifyBtn.MouseButton1Click:Connect(function()
-			local key = KeyInput.Text
-			if key == "" then Status.Text = "Enter a key!"; return end
-			Status.Text = "Verifying..."
-			local success, msg = redeemKey(key)
-			if success then
-				Status.Text = "Success! Loading..."
-				Status.TextColor3 = Color3.fromRGB(0, 255, 100)
-				task.wait(0.5)
-				ScreenGui:Destroy()
-				StartMainScript()
-			else
-				Status.Text = msg
-				Status.TextColor3 = Color3.fromRGB(255, 50, 50)
-			end
-		end)
+    return s(p, r) + lshift(u, 32 - r)
+end
 
-		GetKeyBtn.MouseButton1Click:Connect(function()
-			Status.Text = "Getting Link..."
-			local success, link = cacheLink()
-			if success then
-				fSetClipboard(link)
-				Status.Text = "Link Copied!"
-				Status.TextColor3 = Color3.fromRGB(0, 170, 255)
-			else
-				Status.Text = tostring(link) 
-				Status.TextColor3 = Color3.fromRGB(255, 100, 100)
-			end
-		end)
+local v = {
+    0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5,
+    0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
+    0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3,
+    0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
+    0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc,
+    0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
+    0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7,
+    0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
+    0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13,
+    0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
+    0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3,
+    0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
+    0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5,
+    0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
+    0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208,
+    0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
+}
 
-		if isfile and isfile(Config.KeyFileName) then
-			local savedKey = readfile(Config.KeyFileName)
-			if savedKey ~= "" then
-				Status.Text = "Found saved key, verifying..."
-				task.spawn(function()
-					local success, msg = redeemKey(savedKey)
-					if success then
-						Status.Text = "Auto-login success!"
-						Status.TextColor3 = Color3.fromRGB(0, 255, 100)
-						task.wait(0.5)
-						ScreenGui:Destroy()
-						StartMainScript()
-					else
-						Status.Text = "Saved key expired or invalid."
-						Status.TextColor3 = Color3.fromRGB(255, 150, 0)
-					end
-				end)
-			end
-		end
-	end
+local function w(x)
+    return string.gsub(x, ".", function(char)
+        return string.format("%02x", string.byte(char))
+    end)
+end
 
-	local player = game:GetService("Players").LocalPlayer
-	local pGui = player:WaitForChild("PlayerGui")
+local function y(z, A)
+    local x = ""
 
-	if pGui:FindFirstChild(Config.MainGuiName) then
-		StartMainScript() 
-		return
-	end
+    for _ = 1, A do
+        local C = z % 256
+        x = string.char(C) .. x
+        z = (z - C) / 256
+    end
 
-	CreateGUI()
+    return x
+end
+
+local function D(x, B)
+    local A = 0
+
+    for B = B, B + 3 do
+        A = A * 256 + string.byte(x, B)
+    end
+
+    return A
+end
+
+local function E(F, G)
+    local H = 64 - (G + 9) % 64
+
+    G = y(8 * G, 8)
+    F = F .. "\128" .. string.rep("\0", H) .. G
+
+    assert(#F % 64 == 0)
+
+    return F
+end
+
+local function I(J)
+    J[1] = 0x6a09e667
+    J[2] = 0xbb67ae85
+    J[3] = 0x3c6ef372
+    J[4] = 0xa54ff53a
+    J[5] = 0x510e527f
+    J[6] = 0x9b05688c
+    J[7] = 0x1f83d9ab
+    J[8] = 0x5be0cd19
+
+    return J
+end
+
+local function K(F, B, J)
+    local L = {}
+
+    for M = 1, 16 do
+        L[M] = D(F, B + (M - 1) * 4)
+    end
+
+    for M = 17, 64 do
+        local N = L[M - 15]
+        local O = k(t(N, 7), t(N, 18), s(N, 3))
+
+        N = L[M - 2]
+
+        L[M] = (
+            L[M - 16]
+            + O
+            + L[M - 7]
+            + k(t(N, 17), t(N, 19), s(N, 10))
+        ) % a
+    end
+
+    local d, e, l, P, Q, R, S, T =
+        J[1], J[2], J[3], J[4],
+        J[5], J[6], J[7], J[8]
+
+    for B = 1, 64 do
+        local O = k(t(d, 2), t(d, 13), t(d, 22))
+        local U = k(n(d, e), n(d, l), n(e, l))
+        local V = (O + U) % a
+
+        local W = k(t(Q, 6), t(Q, 11), t(Q, 25))
+        local X = k(n(Q, R), n(o(Q), S))
+
+        local Y = (
+            T + W + X + v[B] + L[B]
+        ) % a
+
+        T = S
+        S = R
+        R = Q
+        Q = (P + Y) % a
+        P = l
+        l = e
+        e = d
+        d = (Y + V) % a
+    end
+
+    J[1] = (J[1] + d) % a
+    J[2] = (J[2] + e) % a
+    J[3] = (J[3] + l) % a
+    J[4] = (J[4] + P) % a
+    J[5] = (J[5] + Q) % a
+    J[6] = (J[6] + R) % a
+    J[7] = (J[7] + S) % a
+    J[8] = (J[8] + T) % a
+end
+
+local function Z(F)
+    F = E(F, #F)
+
+    local J = I({})
+
+    for B = 1, #F, 64 do
+        K(F, B, J)
+    end
+
+    return w(
+        y(J[1], 4) ..
+        y(J[2], 4) ..
+        y(J[3], 4) ..
+        y(J[4], 4) ..
+        y(J[5], 4) ..
+        y(J[6], 4) ..
+        y(J[7], 4) ..
+        y(J[8], 4)
+    )
+end
+
+local e
+
+local l = {
+    ["\\"] = "\\",
+    ["\""] = "\"",
+    ["\b"] = "b",
+    ["\f"] = "f",
+    ["\n"] = "n",
+    ["\r"] = "r",
+    ["\t"] = "t"
+}
+
+local P = {
+    ["/"] = "/"
+}
+
+for Q, R in pairs(l) do
+    P[R] = Q
+end
+
+local S = function(T)
+    return "\\" .. (
+        l[T] or string.format("u%04x", T:byte())
+    )
+end
+
+local B = function()
+    return "null"
+end
+
+local v = function(M, z)
+    local _ = {}
+    z = z or {}
+
+    if z[M] then
+        error("circular reference")
+    end
+
+    z[M] = true
+
+    if rawget(M, 1) ~= nil or next(M) == nil then
+        local A = 0
+
+        for Q in pairs(M) do
+            if type(Q) ~= "number" then
+                error("invalid table: mixed or invalid key types")
+            end
+
+            A = A + 1
+        end
+
+        if A ~= #M then
+            error("invalid table: sparse array")
+        end
+
+        for _, R in ipairs(M) do
+            table.insert(_, e(R, z))
+        end
+
+        z[M] = nil
+
+        return "[" .. table.concat(_, ",") .. "]"
+    else
+        for Q, R in pairs(M) do
+            if type(Q) ~= "string" then
+                error("invalid table: mixed or invalid key types")
+            end
+
+            table.insert(_, e(Q, z) .. ":" .. e(R, z))
+        end
+
+        z[M] = nil
+
+        return "{" .. table.concat(_, ",") .. "}"
+    end
+end
+
+local g = function(M)
+    return '"' .. M:gsub('[%z\1-\31\\\"]', S) .. '"'
+end
+
+local a1 = function(M)
+    if M ~= M or M <= -math.huge or M >= math.huge then
+        error("unexpected number value '" .. tostring(M) .. "'")
+    end
+
+    return string.format("%.14g", M)
+end
+
+local j = {
+    ["nil"] = B,
+    ["table"] = v,
+    ["string"] = g,
+    ["number"] = a1,
+    ["boolean"] = tostring
+}
+
+e = function(M, z)
+    local x = type(M)
+    local a2 = j[x]
+
+    if a2 then
+        return a2(M, z)
+    end
+
+    error("unexpected type '" .. x .. "'")
+end
+
+local a3 = function(M)
+    return e(M)
+end
+
+local a4
+
+local N = function(...)
+    local _ = {}
+
+    for a0 = 1, select("#", ...) do
+        _[select(a0, ...)] = true
+    end
+
+    return _
+end
+
+local L = N(" ", "\t", "\r", "\n")
+local p = N(" ", "\t", "\r", "\n", "]", "}", ",")
+local a5 = N("\\", "/", '"', "b", "f", "n", "r", "t", "u")
+local m = N("true", "false", "null")
+
+local a6 = {
+    ["true"] = true,
+    ["false"] = false,
+    ["null"] = nil
+}
+
+local a7 = function(a8, a9, aa, ab)
+    for a0 = a9, #a8 do
+        if aa[a8:sub(a0, a0)] ~= ab then
+            return a0
+        end
+    end
+
+    return #a8 + 1
+end
+
+local ac = function(a8, a9, J)
+    local ad = 1
+    local ae = 1
+
+    for a0 = 1, a9 - 1 do
+        ae = ae + 1
+
+        if a8:sub(a0, a0) == "\n" then
+            ad = ad + 1
+            ae = 1
+        end
+    end
+
+    error(string.format(
+        "%s at line %d col %d",
+        J,
+        ad,
+        ae
+    ))
+end
+
+local af = function(A)
+    local a2 = math.floor
+
+    if A <= 0x7f then
+        return string.char(A)
+    elseif A <= 0x7ff then
+        return string.char(
+            a2(A / 64) + 192,
+            A % 64 + 128
+        )
+    elseif A <= 0xffff then
+        return string.char(
+            a2(A / 4096) + 224,
+            a2(A % 4096 / 64) + 128,
+            A % 64 + 128
+        )
+    elseif A <= 0x10ffff then
+        return string.char(
+            a2(A / 262144) + 240,
+            a2(A % 262144 / 4096) + 128,
+            a2(A % 4096 / 64) + 128,
+            A % 64 + 128
+        )
+    end
+
+    error(string.format(
+        "invalid unicode codepoint '%x'",
+        A
+    ))
+end
+
+local ag = function(ah)
+    local ai = tonumber(ah:sub(1, 4), 16)
+    local aj = tonumber(ah:sub(7, 10), 16)
+
+    if aj then
+        return af(
+            (ai - 0xd800) * 0x400
+            + aj - 0xdc00
+            + 0x10000
+        )
+    else
+        return af(ai)
+    end
+end
+
+local ak = function(a8, a0)
+    local _ = ""
+    local al = a0 + 1
+    local Q = al
+
+    while al <= #a8 do
+        local am = a8:byte(al)
+
+        if am < 32 then
+            ac(a8, al, "control character in string")
+
+        elseif am == 92 then
+            _ = _ .. a8:sub(Q, al - 1)
+            al = al + 1
+
+            local T = a8:sub(al, al)
+
+            if T == "u" then
+                local an =
+                    a8:match(
+                        "^[dD][89aAbB]%x%x\\u%x%x%x%x",
+                        al + 1
+                    )
+                    or a8:match(
+                        "^%x%x%x%x",
+                        al + 1
+                    )
+                    or ac(
+                        a8,
+                        al - 1,
+                        "invalid unicode escape in string"
+                    )
+
+                _ = _ .. ag(an)
+                al = al + #an
+            else
+                if not a5[T] then
+                    ac(
+                        a8,
+                        al - 1,
+                        "invalid escape char '" .. T .. "' in string"
+                    )
+                end
+
+                _ = _ .. P[T]
+            end
+
+            Q = al + 1
+
+        elseif am == 34 then
+            _ = _ .. a8:sub(Q, al - 1)
+            return _, al + 1
+        end
+
+        al = al + 1
+    end
+
+    ac(
+        a8,
+        a0,
+        "expected closing quote for string"
+    )
+end
+
+local ao = function(a8, a0)
+    local am = a7(a8, a0, p)
+    local ah = a8:sub(a0, am - 1)
+    local A = tonumber(ah)
+
+    if not A then
+        ac(a8, a0, "invalid number '" .. ah .. "'")
+    end
+
+    return A, am
+end
+
+local ap = function(a8, a0)
+    local am = a7(a8, a0, p)
+    local aq = a8:sub(a0, am - 1)
+
+    if not m[aq] then
+        ac(a8, a0, "invalid literal '" .. aq .. "'")
+    end
+
+    return a6[aq], am
+end
+
+local ar = function(a8, a0)
+    local _ = {}
+    local A = 1
+
+    a0 = a0 + 1
+
+    while true do
+        local am
+
+        a0 = a7(a8, a0, L, true)
+
+        if a8:sub(a0, a0) == "]" then
+            a0 = a0 + 1
+            break
+        end
+
+        am, a0 = a4(a8, a0)
+        _[A] = am
+        A = A + 1
+
+        a0 = a7(a8, a0, L, true)
+
+        local as = a8:sub(a0, a0)
+        a0 = a0 + 1
+
+        if as == "]" then
+            break
+        end
+
+        if as ~= "," then
+            ac(a8, a0, "expected ']' or ','")
+        end
+    end
+
+    return _, a0
+end
+
+local at = function(a8, a0)
+    local _ = {}
+
+    a0 = a0 + 1
+
+    while true do
+        local au, M
+
+        a0 = a7(a8, a0, L, true)
+
+        if a8:sub(a0, a0) == "}" then
+            a0 = a0 + 1
+            break
+        end
+
+        if a8:sub(a0, a0) ~= '"' then
+            ac(a8, a0, "expected string for key")
+        end
+
+        au, a0 = a4(a8, a0)
+
+        a0 = a7(a8, a0, L, true)
+
+        if a8:sub(a0, a0) ~= ":" then
+            ac(a8, a0, "expected ':' after key")
+        end
+
+        a0 = a7(a8, a0 + 1, L, true)
+
+        M, a0 = a4(a8, a0)
+        _[au] = M
+
+        a0 = a7(a8, a0, L, true)
+
+        local as = a8:sub(a0, a0)
+        a0 = a0 + 1
+
+        if as == "}" then
+            break
+        end
+
+        if as ~= "," then
+            ac(a8, a0, "expected '}' or ','")
+        end
+    end
+
+    return _, a0
+end
+
+local av = {
+    ['"'] = ak,
+    ["0"] = ao,
+    ["1"] = ao,
+    ["2"] = ao,
+    ["3"] = ao,
+    ["4"] = ao,
+    ["5"] = ao,
+    ["6"] = ao,
+    ["7"] = ao,
+    ["8"] = ao,
+    ["9"] = ao,
+    ["-"] = ao,
+    ["t"] = ap,
+    ["f"] = ap,
+    ["n"] = ap,
+    ["["] = ar,
+    ["{"] = at
+}
+
+a4 = function(a8, a9)
+    local as = a8:sub(a9, a9)
+    local a2 = av[as]
+
+    if a2 then
+        return a2(a8, a9)
+    end
+
+    ac(
+        a8,
+        a9,
+        "unexpected character '" .. as .. "'"
+    )
+end
+
+local aw = function(a8)
+    if type(a8) ~= "string" then
+        error(
+            "expected argument of type string, got "
+            .. type(a8)
+        )
+    end
+
+    local _, a9 =
+        a4(a8, a7(a8, 1, L, true))
+
+    a9 = a7(a8, a9, L, true)
+
+    if a9 <= #a8 then
+        ac(a8, a9, "trailing garbage")
+    end
+
+    return _
+end
+
+local lEncode = a3
+local lDecode = aw
+local lDigest = Z
+
+----------------------------------------------------------------
+-- CORE FUNCTIONS
+----------------------------------------------------------------
+
+local useNonce = true
+
+local function safeRequest(options)
+    local req =
+        request
+        or http_request
+        or syn_request
+        or (http and http.request)
+
+    if not req then
+        return nil, "HTTP requests not supported"
+    end
+
+    local success, response = pcall(function()
+        return req(options)
+    end)
+
+    if success and type(response) == "table" then
+        return response
+    end
+
+    return nil, "Connection Error: "
+        .. tostring(response or "Unknown")
+end
+
+local fSetClipboard =
+    setclipboard
+    or toclipboard
+    or function() end
+
+local fStringChar = string.char
+local fToString   = tostring
+local fOsTime      = os.time
+local fMathRandom  = math.random
+local fMathFloor   = math.floor
+
+local fGetHwid =
+    gethwid
+    or function()
+        return game:GetService("RbxAnalyticsService"):GetClientId()
+    end
+
+local cachedLink = ""
+local cachedTime = 0
+
+local host = "https://api.platoboost.com"
+
+local function checkConnectivity()
+    local response = safeRequest({
+        Url = host .. "/public/connectivity",
+        Method = "GET"
+    })
+
+    if not response
+        or (
+            response.StatusCode ~= 200
+            and response.StatusCode ~= 429
+        )
+    then
+        host = "https://api.platoboost.net"
+
+        local fallbackResponse = safeRequest({
+            Url = host .. "/public/connectivity",
+            Method = "GET"
+        })
+
+        if not fallbackResponse then
+            return false
+        end
+    end
+
+    return true
+end
+
+local function generateNonce()
+    local str = ""
+
+    for _ = 1, 16 do
+        str = str .. fStringChar(
+            fMathFloor(
+                fMathRandom() * 26
+            ) + 97
+        )
+    end
+
+    return str
+end
+
+local function cacheLink()
+    if not checkConnectivity() then
+        return false,
+            "Delta/Network Error! Use VPN or change Executor."
+    end
+
+    if cachedTime + (10 * 60) < fOsTime() then
+        local response, err = safeRequest({
+            Url = host .. "/public/start",
+            Method = "POST",
+            Body = lEncode({
+                service = Config.ServiceId,
+                identifier = lDigest(fGetHwid())
+            }),
+            Headers = {
+                ["Content-Type"] = "application/json"
+            }
+        })
+
+        if response and response.StatusCode == 200 then
+            local decoded = lDecode(response.Body)
+
+            if decoded.success then
+                cachedLink = decoded.data.url
+                cachedTime = fOsTime()
+
+                return true, cachedLink
+            end
+        end
+
+        return false, err or "Server Unreachable"
+    end
+
+    return true, cachedLink
+end
+
+local function redeemKey(key)
+    local nonce = generateNonce()
+
+    local body = {
+        identifier = lDigest(fGetHwid()),
+        key = key
+    }
+
+    if useNonce then
+        body.nonce = nonce
+    end
+
+    local response, err = safeRequest({
+        Url = host
+            .. "/public/redeem/"
+            .. fToString(Config.ServiceId),
+
+        Method = "POST",
+
+        Body = lEncode(body),
+
+        Headers = {
+            ["Content-Type"] = "application/json"
+        }
+    })
+
+    if response and response.StatusCode == 200 then
+        local decoded = lDecode(response.Body)
+
+        if decoded.success and decoded.data.valid then
+            if useNonce then
+                if decoded.data.hash
+                    == lDigest(
+                        "true"
+                        .. "-"
+                        .. nonce
+                        .. "-"
+                        .. Config.PlatoSecret
+                    )
+                then
+                    if writefile then
+                        writefile(
+                            Config.KeyFileName,
+                            key
+                        )
+                    end
+
+                    return true, "Success"
+                end
+
+                return false, "Integrity Check Failed"
+            end
+
+            if writefile then
+                writefile(
+                    Config.KeyFileName,
+                    key
+                )
+            end
+
+            return true, "Success"
+        end
+
+        return false,
+            decoded.message or "Invalid Key"
+    end
+
+    return false, err or "Server Error"
+end
+
+----------------------------------------------------------------
+-- MAIN SCRIPT
+----------------------------------------------------------------
+
+local function StartMainScript()
+    local player =
+        game:GetService("Players").LocalPlayer
+
+    local pGui =
+        player:WaitForChild("PlayerGui")
+
+    if pGui:FindFirstChild(Config.OldGuiName) then
+        pGui[Config.OldGuiName]:Destroy()
+        task.wait(0.1)
+    end
+
+    _G[Config.Secret] = true
+
+    loadstring(
+        game:HttpGet(Config.MainScriptURL)
+    )()
+end
+
+----------------------------------------------------------------
+-- GALAXY UI
+----------------------------------------------------------------
+
+local function CreateGUI()
+    local player =
+        game:GetService("Players").LocalPlayer
+
+    local coreGui =
+        game:GetService("CoreGui")
+
+    local targetParent =
+        pcall(function()
+            return coreGui
+        end)
+        and coreGui
+        or player:WaitForChild("PlayerGui")
+
+    if targetParent:FindFirstChild("OYB_KeySystem") then
+        targetParent.OYB_KeySystem:Destroy()
+    end
+
+    ------------------------------------------------------------
+    -- COLORS
+    ------------------------------------------------------------
+
+    local COLORS = {
+        Space       = Color3.fromRGB(5, 9, 25),
+        Space2      = Color3.fromRGB(8, 15, 38),
+        Panel       = Color3.fromRGB(11, 20, 45),
+        PanelLight  = Color3.fromRGB(17, 30, 60),
+
+        Blue        = Color3.fromRGB(55, 170, 255),
+        Cyan        = Color3.fromRGB(75, 215, 255),
+        SoftBlue    = Color3.fromRGB(120, 195, 255),
+
+        White       = Color3.fromRGB(235, 245, 255),
+        Muted       = Color3.fromRGB(145, 165, 195),
+
+        Success     = Color3.fromRGB(70, 230, 150),
+        Error       = Color3.fromRGB(255, 95, 110),
+
+        Stroke      = Color3.fromRGB(35, 100, 175)
+    }
+
+    ------------------------------------------------------------
+    -- SCREEN GUI
+    ------------------------------------------------------------
+
+    local ScreenGui = Instance.new("ScreenGui")
+    ScreenGui.Name = "OYB_KeySystem"
+    ScreenGui.ResetOnSpawn = false
+    ScreenGui.IgnoreGuiInset = true
+    ScreenGui.Parent = targetParent
+
+    ------------------------------------------------------------
+    -- BACKGROUND
+    ------------------------------------------------------------
+
+    local Background = Instance.new("Frame")
+    Background.Size = UDim2.fromScale(1, 1)
+    Background.BackgroundColor3 = COLORS.Space
+    Background.BorderSizePixel = 0
+    Background.BackgroundTransparency = 0.15
+    Background.Parent = ScreenGui
+
+    local BackgroundGradient =
+        Instance.new("UIGradient")
+
+    BackgroundGradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(
+            0,
+            Color3.fromRGB(3, 7, 20)
+        ),
+
+        ColorSequenceKeypoint.new(
+            0.5,
+            Color3.fromRGB(7, 15, 38)
+        ),
+
+        ColorSequenceKeypoint.new(
+            1,
+            Color3.fromRGB(3, 7, 20)
+        )
+    })
+
+    BackgroundGradient.Rotation = 45
+    BackgroundGradient.Parent = Background
+
+    ------------------------------------------------------------
+    -- STARS
+    ------------------------------------------------------------
+
+    local StarContainer = Instance.new("Frame")
+    StarContainer.Size = UDim2.fromScale(1, 1)
+    StarContainer.BackgroundTransparency = 1
+    StarContainer.Parent = Background
+
+    math.randomseed(os.time())
+
+    for i = 1, 65 do
+        local star = Instance.new("Frame")
+
+        local size = math.random(1, 3)
+
+        star.Size = UDim2.fromOffset(size, size)
+
+        star.Position = UDim2.new(
+            math.random(),
+            0,
+            math.random(),
+            0
+        )
+
+        star.BackgroundColor3 =
+            Color3.fromRGB(
+                math.random(150, 220),
+                math.random(210, 255),
+                255
+            )
+
+        star.BackgroundTransparency =
+            math.random(30, 75) / 100
+
+        star.BorderSizePixel = 0
+        star.Parent = StarContainer
+
+        local corner = Instance.new("UICorner")
+        corner.CornerRadius = UDim.new(1, 0)
+        corner.Parent = star
+    end
+
+    ------------------------------------------------------------
+    -- MAIN PANEL
+    ------------------------------------------------------------
+
+    local MainFrame = Instance.new("Frame")
+
+    MainFrame.Size =
+        UDim2.new(0, 365, 0, 405)
+
+    MainFrame.Position =
+        UDim2.new(0.5, -182, 0.5, -202)
+
+    MainFrame.BackgroundColor3 = COLORS.Panel
+    MainFrame.BorderSizePixel = 0
+    MainFrame.Active = true
+    MainFrame.Draggable = true
+    MainFrame.Parent = ScreenGui
+
+    local MainCorner = Instance.new("UICorner")
+    MainCorner.CornerRadius = UDim.new(0, 18)
+    MainCorner.Parent = MainFrame
+
+    local MainStroke = Instance.new("UIStroke")
+    MainStroke.Thickness = 1.5
+    MainStroke.Color = COLORS.Stroke
+    MainStroke.Transparency = 0.25
+    MainStroke.Parent = MainFrame
+
+    local PanelGradient =
+        Instance.new("UIGradient")
+
+    PanelGradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(
+            0,
+            Color3.fromRGB(13, 26, 55)
+        ),
+
+        ColorSequenceKeypoint.new(
+            0.5,
+            Color3.fromRGB(8, 18, 40)
+        ),
+
+        ColorSequenceKeypoint.new(
+            1,
+            Color3.fromRGB(5, 12, 30)
+        )
+    })
+
+    PanelGradient.Rotation = 90
+    PanelGradient.Parent = MainFrame
+
+    ------------------------------------------------------------
+    -- TOP GLOW
+    ------------------------------------------------------------
+
+    local TopGlow = Instance.new("Frame")
+
+    TopGlow.Size =
+        UDim2.new(1, -40, 0, 2)
+
+    TopGlow.Position =
+        UDim2.new(0, 20, 0, 50)
+
+    TopGlow.BackgroundColor3 = COLORS.Cyan
+    TopGlow.BackgroundTransparency = 0.25
+    TopGlow.BorderSizePixel = 0
+    TopGlow.Parent = MainFrame
+
+    local GlowGradient =
+        Instance.new("UIGradient")
+
+    GlowGradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(
+            0,
+            Color3.fromRGB(30, 110, 255)
+        ),
+
+        ColorSequenceKeypoint.new(
+            0.5,
+            Color3.fromRGB(90, 225, 255)
+        ),
+
+        ColorSequenceKeypoint.new(
+            1,
+            Color3.fromRGB(30, 110, 255)
+        )
+    })
+
+    GlowGradient.Parent = TopGlow
+
+    ------------------------------------------------------------
+    -- CLOSE BUTTON
+    ------------------------------------------------------------
+
+    local CloseBtn = Instance.new("TextButton")
+
+    CloseBtn.Size =
+        UDim2.fromOffset(32, 32)
+
+    CloseBtn.Position =
+        UDim2.new(1, -43, 0, 10)
+
+    CloseBtn.BackgroundColor3 =
+        Color3.fromRGB(20, 35, 65)
+
+    CloseBtn.BackgroundTransparency = 0.15
+    CloseBtn.Text = "×"
+    CloseBtn.TextColor3 =
+        Color3.fromRGB(170, 205, 235)
+
+    CloseBtn.Font = Enum.Font.GothamBold
+    CloseBtn.TextSize = 21
+    CloseBtn.AutoButtonColor = false
+    CloseBtn.Parent = MainFrame
+
+    local CloseCorner = Instance.new("UICorner")
+    CloseCorner.CornerRadius = UDim.new(0, 9)
+    CloseCorner.Parent = CloseBtn
+
+    CloseBtn.MouseEnter:Connect(function()
+        CloseBtn.BackgroundColor3 =
+            Color3.fromRGB(80, 35, 55)
+
+        CloseBtn.TextColor3 =
+            Color3.fromRGB(255, 125, 140)
+    end)
+
+    CloseBtn.MouseLeave:Connect(function()
+        CloseBtn.BackgroundColor3 =
+            Color3.fromRGB(20, 35, 65)
+
+        CloseBtn.TextColor3 =
+            Color3.fromRGB(170, 205, 235)
+    end)
+
+    CloseBtn.MouseButton1Click:Connect(function()
+        ScreenGui:Destroy()
+    end)
+
+    ------------------------------------------------------------
+    -- TITLE
+    ------------------------------------------------------------
+
+    local Title = Instance.new("TextLabel")
+
+    Title.Size =
+        UDim2.new(1, -80, 0, 35)
+
+    Title.Position =
+        UDim2.new(0, 25, 0, 10)
+
+    Title.BackgroundTransparency = 1
+    Title.Text = Config.HubName
+    Title.TextColor3 = COLORS.White
+    Title.Font = Enum.Font.GothamBold
+    Title.TextSize = 21
+    Title.TextXAlignment = Enum.TextXAlignment.Left
+    Title.Parent = MainFrame
+
+    ------------------------------------------------------------
+    -- DESCRIPTION
+    ------------------------------------------------------------
+
+    local PromoText = Instance.new("TextLabel")
+
+    PromoText.Size =
+        UDim2.new(1, -50, 0, 30)
+
+    PromoText.Position =
+        UDim2.new(0, 25, 0, 62)
+
+    PromoText.BackgroundTransparency = 1
+    PromoText.Text = Config.HubDescription
+    PromoText.TextColor3 = COLORS.SoftBlue
+    PromoText.Font = Enum.Font.GothamMedium
+    PromoText.TextSize = 13
+    PromoText.TextXAlignment = Enum.TextXAlignment.Left
+    PromoText.Parent = MainFrame
+
+    ------------------------------------------------------------
+    -- CONTENT
+    ------------------------------------------------------------
+
+    local Content = Instance.new("Frame")
+
+    Content.Size =
+        UDim2.new(1, -50, 1, -115)
+
+    Content.Position =
+        UDim2.new(0, 25, 0, 105)
+
+    Content.BackgroundTransparency = 1
+    Content.Parent = MainFrame
+
+    local currentYOffset = 0
+
+    ------------------------------------------------------------
+    -- BUTTON HELPER
+    ------------------------------------------------------------
+
+    local function CreateButton(text, color)
+        local Button = Instance.new("TextButton")
+
+        Button.Size =
+            UDim2.new(1, 0, 0, 38)
+
+        Button.Position =
+            UDim2.new(0, 0, 0, currentYOffset)
+
+        Button.BackgroundColor3 = color
+        Button.BackgroundTransparency = 0.05
+        Button.BorderSizePixel = 0
+
+        Button.Text = text
+        Button.TextColor3 = COLORS.White
+        Button.Font = Enum.Font.GothamBold
+        Button.TextSize = 13
+        Button.AutoButtonColor = false
+        Button.Parent = Content
+
+        local Corner = Instance.new("UICorner")
+        Corner.CornerRadius = UDim.new(0, 10)
+        Corner.Parent = Button
+
+        local Stroke = Instance.new("UIStroke")
+        Stroke.Color = Color3.fromRGB(
+            math.min(color.R * 255 + 35, 255),
+            math.min(color.G * 255 + 35, 255),
+            math.min(color.B * 255 + 35, 255)
+        )
+        Stroke.Transparency = 0.55
+        Stroke.Thickness = 1
+        Stroke.Parent = Button
+
+        Button.MouseEnter:Connect(function()
+            Button.BackgroundColor3 =
+                Color3.fromRGB(
+                    math.min(color.R * 255 + 12, 255),
+                    math.min(color.G * 255 + 12, 255),
+                    math.min(color.B * 255 + 12, 255)
+                )
+        end)
+
+        Button.MouseLeave:Connect(function()
+            Button.BackgroundColor3 = color
+        end)
+
+        currentYOffset =
+            currentYOffset + 46
+
+        return Button
+    end
+
+    ------------------------------------------------------------
+    -- SOCIAL BUTTONS
+    ------------------------------------------------------------
+
+    if Config.ShowDiscord then
+        local DiscordBtn = CreateButton(
+            "JOIN DISCORD",
+            Color3.fromRGB(47, 68, 145)
+        )
+
+        DiscordBtn.MouseButton1Click:Connect(function()
+            fSetClipboard(Config.DiscordURL)
+
+            Status.Text = "Discord link copied!"
+            Status.TextColor3 =
+                Color3.fromRGB(120, 180, 255)
+        end)
+    end
+
+    if Config.ShowInstagram then
+        local InstaBtn = CreateButton(
+            "FOLLOW INSTAGRAM",
+            Color3.fromRGB(105, 48, 105)
+        )
+
+        InstaBtn.MouseButton1Click:Connect(function()
+            fSetClipboard(Config.InstagramURL)
+
+            Status.Text = "Instagram link copied!"
+            Status.TextColor3 =
+                Color3.fromRGB(220, 150, 220)
+        end)
+    end
+
+    if Config.ShowYoutube then
+        local YTBtn = CreateButton(
+            "SUBSCRIBE YOUTUBE",
+            Color3.fromRGB(130, 45, 55)
+        )
+
+        YTBtn.MouseButton1Click:Connect(function()
+            fSetClipboard(Config.YoutubeURL)
+
+            Status.Text = "YouTube link copied!"
+            Status.TextColor3 =
+                Color3.fromRGB(255, 140, 150)
+        end)
+    end
+
+    ------------------------------------------------------------
+    -- KEY INPUT
+    ------------------------------------------------------------
+
+    local KeyInput = Instance.new("TextBox")
+
+    KeyInput.Size =
+        UDim2.new(1, 0, 0, 42)
+
+    KeyInput.Position =
+        UDim2.new(0, 0, 0, currentYOffset + 5)
+
+    KeyInput.BackgroundColor3 =
+        Color3.fromRGB(6, 14, 32)
+
+    KeyInput.BackgroundTransparency = 0
+    KeyInput.BorderSizePixel = 0
+
+    KeyInput.PlaceholderText =
+        "Enter your key..."
+
+    KeyInput.PlaceholderColor3 =
+        Color3.fromRGB(105, 130, 165)
+
+    KeyInput.Text = ""
+    KeyInput.TextColor3 = COLORS.White
+
+    KeyInput.Font =
+        Enum.Font.GothamMedium
+
+    KeyInput.TextSize = 13
+    KeyInput.ClearTextOnFocus = false
+    KeyInput.Parent = Content
+
+    local InputCorner = Instance.new("UICorner")
+    InputCorner.CornerRadius = UDim.new(0, 10)
+    InputCorner.Parent = KeyInput
+
+    local InputStroke = Instance.new("UIStroke")
+    InputStroke.Color =
+        Color3.fromRGB(30, 75, 125)
+
+    InputStroke.Transparency = 0.35
+    InputStroke.Thickness = 1
+    InputStroke.Parent = KeyInput
+
+    KeyInput.Focused:Connect(function()
+        InputStroke.Color = COLORS.Cyan
+        InputStroke.Transparency = 0.05
+    end)
+
+    KeyInput.FocusLost:Connect(function()
+        InputStroke.Color =
+            Color3.fromRGB(30, 75, 125)
+
+        InputStroke.Transparency = 0.35
+    end)
+
+    ------------------------------------------------------------
+    -- ACTION BUTTONS
+    ------------------------------------------------------------
+
+    local VerifyBtn = Instance.new("TextButton")
+
+    VerifyBtn.Size =
+        UDim2.new(0.48, 0, 0, 40)
+
+    VerifyBtn.Position =
+        UDim2.new(0, 0, 0, currentYOffset + 58)
+
+    VerifyBtn.BackgroundColor3 =
+        Color3.fromRGB(25, 115, 205)
+
+    VerifyBtn.Text = "VERIFY"
+    VerifyBtn.TextColor3 = COLORS.White
+    VerifyBtn.Font = Enum.Font.GothamBold
+    VerifyBtn.TextSize = 13
+    VerifyBtn.AutoButtonColor = false
+    VerifyBtn.Parent = Content
+
+    local VerifyCorner = Instance.new("UICorner")
+    VerifyCorner.CornerRadius = UDim.new(0, 10)
+    VerifyCorner.Parent = VerifyBtn
+
+    local VerifyStroke = Instance.new("UIStroke")
+    VerifyStroke.Color = COLORS.Cyan
+    VerifyStroke.Transparency = 0.55
+    VerifyStroke.Parent = VerifyBtn
+
+    local GetKeyBtn = Instance.new("TextButton")
+
+    GetKeyBtn.Size =
+        UDim2.new(0.48, 0, 0, 40)
+
+    GetKeyBtn.Position =
+        UDim2.new(0.52, 0, 0, currentYOffset + 58)
+
+    GetKeyBtn.BackgroundColor3 =
+        Color3.fromRGB(19, 38, 70)
+
+    GetKeyBtn.Text = "GET KEY"
+    GetKeyBtn.TextColor3 = COLORS.White
+    GetKeyBtn.Font = Enum.Font.GothamBold
+    GetKeyBtn.TextSize = 13
+    GetKeyBtn.AutoButtonColor = false
+    GetKeyBtn.Parent = Content
+
+    local GetKeyCorner = Instance.new("UICorner")
+    GetKeyCorner.CornerRadius = UDim.new(0, 10)
+    GetKeyCorner.Parent = GetKeyBtn
+
+    local GetKeyStroke = Instance.new("UIStroke")
+    GetKeyStroke.Color =
+        Color3.fromRGB(50, 105, 165)
+
+    GetKeyStroke.Transparency = 0.45
+    GetKeyStroke.Parent = GetKeyBtn
+
+    ------------------------------------------------------------
+    -- STATUS
+    ------------------------------------------------------------
+
+    local Status = Instance.new("TextLabel")
+
+    Status.Name = "StatusLabel"
+
+    Status.Size =
+        UDim2.new(1, 0, 0, 30)
+
+    Status.Position =
+        UDim2.new(0, 0, 0, currentYOffset + 108)
+
+    Status.BackgroundTransparency = 1
+    Status.Text = "Waiting for input..."
+    Status.TextColor3 = COLORS.Muted
+    Status.Font = Enum.Font.GothamMedium
+    Status.TextSize = 12
+    Status.TextWrapped = true
+    Status.Parent = Content
+
+    ------------------------------------------------------------
+    -- HOVER EFFECTS
+    ------------------------------------------------------------
+
+    VerifyBtn.MouseEnter:Connect(function()
+        VerifyBtn.BackgroundColor3 =
+            Color3.fromRGB(35, 135, 225)
+    end)
+
+    VerifyBtn.MouseLeave:Connect(function()
+        VerifyBtn.BackgroundColor3 =
+            Color3.fromRGB(25, 115, 205)
+    end)
+
+    GetKeyBtn.MouseEnter:Connect(function()
+        GetKeyBtn.BackgroundColor3 =
+            Color3.fromRGB(27, 52, 90)
+    end)
+
+    GetKeyBtn.MouseLeave:Connect(function()
+        GetKeyBtn.BackgroundColor3 =
+            Color3.fromRGB(19, 38, 70)
+    end)
+
+    ------------------------------------------------------------
+    -- VERIFY
+    ------------------------------------------------------------
+
+    VerifyBtn.MouseButton1Click:Connect(function()
+        local key = KeyInput.Text
+
+        if key == "" then
+            Status.Text = "Please enter a key."
+            Status.TextColor3 = COLORS.Error
+            return
+        end
+
+        Status.Text = "Verifying key..."
+        Status.TextColor3 = COLORS.SoftBlue
+
+        local success, msg =
+            redeemKey(key)
+
+        if success then
+            Status.Text = "Verified! Loading..."
+            Status.TextColor3 = COLORS.Success
+
+            task.wait(0.5)
+
+            ScreenGui:Destroy()
+            StartMainScript()
+        else
+            Status.Text = tostring(msg)
+            Status.TextColor3 = COLORS.Error
+        end
+    end)
+
+    ------------------------------------------------------------
+    -- GET KEY
+    ------------------------------------------------------------
+
+    GetKeyBtn.MouseButton1Click:Connect(function()
+        Status.Text = "Getting key link..."
+        Status.TextColor3 = COLORS.SoftBlue
+
+        local success, link =
+            cacheLink()
+
+        if success then
+            fSetClipboard(link)
+
+            Status.Text = "Key link copied!"
+            Status.TextColor3 = COLORS.Success
+        else
+            Status.Text = tostring(link)
+            Status.TextColor3 = COLORS.Error
+        end
+    end)
+
+    ------------------------------------------------------------
+    -- AUTO LOGIN
+    ------------------------------------------------------------
+
+    if isfile
+        and isfile(Config.KeyFileName)
+    then
+        local savedKey =
+            readfile(Config.KeyFileName)
+
+        if savedKey ~= "" then
+            Status.Text =
+                "Saved key found. Verifying..."
+
+            Status.TextColor3 =
+                COLORS.SoftBlue
+
+            task.spawn(function()
+                local success, msg =
+                    redeemKey(savedKey)
+
+                if success then
+                    Status.Text =
+                        "Auto-login successful!"
+
+                    Status.TextColor3 =
+                        COLORS.Success
+
+                    task.wait(0.5)
+
+                    ScreenGui:Destroy()
+                    StartMainScript()
+                else
+                    Status.Text =
+                        "Saved key expired or invalid."
+
+                    Status.TextColor3 =
+                        Color3.fromRGB(
+                            255,
+                            175,
+                            80
+                        )
+                end
+            end)
+        end
+    end
+end
+
+----------------------------------------------------------------
+-- START
+----------------------------------------------------------------
+
+local player =
+    game:GetService("Players").LocalPlayer
+
+local pGui =
+    player:WaitForChild("PlayerGui")
+
+if pGui:FindFirstChild(Config.MainGuiName) then
+    StartMainScript()
+    return
+end
+
+CreateGUI()
