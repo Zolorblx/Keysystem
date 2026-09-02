@@ -21,7 +21,7 @@ local Config = {
 
     -- IMPORTANT:
     -- Replace this with your NEW rotated Platoboost secret.
-    PlatoSecret = "REPLACE_WITH_YOUR_NEW_PLATO_SECRET",
+    PlatoSecret = "37b9d1d0-5c79-4d26-bc60-42f94917d279",
 
     -- [2] Main script gate
     Secret = "zolopogi123",
